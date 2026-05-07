@@ -1,26 +1,34 @@
 from datetime import datetime
 from typing import Optional
-from sqlmodel import SQLModel
+
+from pydantic import BaseModel
 
 
-# ─── Ingrediente ──────────────────────────────────────────────────────────────
-
-class IngredienteCreate(SQLModel):
+class IngredienteCreate(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
     es_alergeno: bool = False
 
 
-class IngredienteUpdate(SQLModel):
+class IngredienteUpdate(BaseModel):
     nombre: Optional[str] = None
     descripcion: Optional[str] = None
     es_alergeno: Optional[bool] = None
 
 
-class IngredienteRead(SQLModel):
+class IngredienteRead(BaseModel):
     id: int
     nombre: str
     descripcion: Optional[str]
     es_alergeno: bool
     created_at: datetime
     updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class IngredienteListResponse(BaseModel):
+    items: list[IngredienteRead]
+    total: int
+    skip: int
+    limit: int

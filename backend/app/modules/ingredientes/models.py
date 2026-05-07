@@ -17,6 +17,7 @@ class Ingrediente(SQLModel, table=True):
 
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
     updated_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    deleted_at: Optional[datetime] = Field(default=None)
 
     # Relación N:N con Producto a través de ProductoIngrediente
     producto_ingredientes: list["ProductoIngrediente"] = Relationship(

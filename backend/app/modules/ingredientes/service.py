@@ -1,82 +1,103 @@
+import io
 from datetime import datetime
+from typing import Optional
 
+import openpyxl
 from fastapi import HTTPException, status
-from sqlmodel import Session
 
 from app.modules.ingredientes.models import Ingrediente
-from app.modules.ingredientes.schemas import IngredienteCreate, IngredienteUpdate
+from app.modules.ingredientes.schemas import (
+    IngredienteCreate,
+    IngredienteListResponse,
+    IngredienteRead,
+    IngredienteUpdate,
+)
 from app.modules.ingredientes.unit_of_work import IngredienteUoW
 
 
 class IngredienteService:
-    def __init__(self, session: Session):
-        self._session = session
 
-    # ── Helper privado ────────────────────────────────────────────────────────
+    @staticmethod
+    def listar(
+        uow: IngredienteUoW,
+        nombre: Optional[str] = None,
+        es_alergeno: Optional[bool] = None,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> IngredienteListResponse:
+        items, total = uow.ingredientes.list_with_filters(nombre, es_alergeno, skip, limit)
+        return IngredienteListResponse(
+            items=[IngredienteRead.model_validate(i) for i in items],
+            total=total,
+            skip=skip,
+            limit=limit,
+        )
 
-    def _validar_nombre_unico(self, uow: IngredienteUoW, nombre: str) -> None:
-        """Lanza 409 si ya existe un ingrediente con ese nombre."""
-        if uow.ingredientes.get_by_nombre(nombre):
+    @staticmethod
+    def obtener(uow: IngredienteUoW, id: int) -> Ingrediente:
+        obj = uow.ingredientes.get_activo_by_id(id)
+        if not obj:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Ingrediente con id={id} no encontrado.",
+            )
+        return obj
+
+    @staticmethod
+    def crear(uow: IngredienteUoW, data: IngredienteCreate) -> Ingrediente:
+        existing = uow.ingredientes.get_activo_by_nombre(data.nombre)
+        if existing:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Ya existe un ingrediente con el nombre '{nombre}'.",
+                detail=f"Ya existe un ingrediente con el nombre '{data.nombre}'.",
             )
+        obj = Ingrediente(**data.model_dump())
+        # add() hace flush() + refresh() internamente.
+        # El commit real lo ejecuta UoW.__exit__ al salir del bloque `with`.
+        return uow.ingredientes.add(obj)
 
-    # ── Métodos públicos ──────────────────────────────────────────────────────
+    @staticmethod
+    def actualizar(uow: IngredienteUoW, id: int, data: IngredienteUpdate) -> Ingrediente:
+        obj = IngredienteService.obtener(uow, id)
+        update_data = data.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(obj, field, value)
+        obj.updated_at = datetime.utcnow()
+        # update() hace flush() + refresh(). El commit lo hace UoW.__exit__.
+        return uow.ingredientes.update(obj)
 
-    def listar(self, solo_alergenos: bool = False) -> list[Ingrediente]:
-        with IngredienteUoW(self._session) as uow:
-            if solo_alergenos:
-                return uow.ingredientes.get_alergenos()
-            return uow.ingredientes.get_all_activos()
+    @staticmethod
+    def eliminar(uow: IngredienteUoW, id: int) -> None:
+        obj = IngredienteService.obtener(uow, id)
+        # soft_delete() hace flush(). El commit lo hace UoW.__exit__.
+        uow.ingredientes.soft_delete(obj)
 
-    def obtener(self, id: int) -> Ingrediente:
-        with IngredienteUoW(self._session) as uow:
-            ingrediente = uow.ingredientes.get_by_id(id)
-            if not ingrediente:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Ingrediente con id={id} no encontrado.",
-                )
-            return ingrediente
+    @staticmethod
+    def exportar(
+        uow: IngredienteUoW,
+        nombre: Optional[str] = None,
+        es_alergeno: Optional[bool] = None,
+    ) -> bytes:
+        # Sin paginación — exportar todo. El UoW sigue abierto mientras generamos el xlsx.
+        items, _ = uow.ingredientes.list_with_filters(nombre, es_alergeno, skip=0, limit=10_000)
 
-    def crear(self, data: IngredienteCreate) -> Ingrediente:
-        with IngredienteUoW(self._session) as uow:
-            self._validar_nombre_unico(uow, data.nombre)
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Ingredientes"
 
-            ingrediente = Ingrediente(**data.model_dump())
-            uow.ingredientes.add(ingrediente)
+        headers = ["ID", "Nombre", "Descripción", "Alérgeno", "Creado"]
+        ws.append(headers)
 
-        self._session.refresh(ingrediente)
-        return ingrediente
+        for item in items:
+            ws.append([
+                item.id,
+                item.nombre,
+                item.descripcion or "",
+                "Sí" if item.es_alergeno else "No",
+                item.created_at.strftime("%Y-%m-%d %H:%M"),
+            ])
 
-    def actualizar(self, id: int, data: IngredienteUpdate) -> Ingrediente:
-        with IngredienteUoW(self._session) as uow:
-            ingrediente = uow.ingredientes.get_by_id(id)
-            if not ingrediente:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Ingrediente con id={id} no encontrado.",
-                )
-
-            cambios = data.model_dump(exclude_unset=True)
-            if "nombre" in cambios and cambios["nombre"] != ingrediente.nombre:
-                self._validar_nombre_unico(uow, cambios["nombre"])
-
-            for key, value in cambios.items():
-                setattr(ingrediente, key, value)
-            ingrediente.updated_at = datetime.utcnow()
-            uow.ingredientes.add(ingrediente)
-
-        self._session.refresh(ingrediente)
-        return ingrediente
-
-    def eliminar(self, id: int) -> None:
-        with IngredienteUoW(self._session) as uow:
-            ingrediente = uow.ingredientes.get_by_id(id)
-            if not ingrediente:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Ingrediente con id={id} no encontrado.",
-                )
-            uow.ingredientes.delete(ingrediente)
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+        return buffer.read()

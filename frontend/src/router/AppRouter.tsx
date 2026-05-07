@@ -53,7 +53,7 @@ export function AppRouter() {
         <Route
           path="/usuarios"
           element={
-            <ProtectedRoute allowedRoles={["Admin"]}>
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
               <UsuariosPage />
             </ProtectedRoute>
           }

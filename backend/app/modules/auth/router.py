@@ -1,17 +1,34 @@
-# TODO: Implementar router de auth
-#
-# Prefix: /api/v1/auth
-# Tags: ["Auth"]
-#
-# Endpoints:
-# POST /register → 201 TokenResponse
-# POST /login    → 200 TokenResponse
-# POST /refresh  → 200 TokenResponse
-# POST /logout   → 204 No Content
-#
-# Regla: el router SOLO valida schemas y delega al AuthService.
-# CERO lógica de negocio aquí.
-#
-# Seguridad:
-# - /login → sin autenticación
-# - /logout → requiere Bearer token válido (Depends(get_current_user))
+from fastapi import APIRouter, Depends, Request, status
+from sqlmodel import Session
+
+from app.core.database import get_session
+from app.core.dependencies import get_current_user
+from app.core.middleware import limiter
+from app.modules.auth.schemas import LoginRequest, RefreshRequest, TokenResponse
+from app.modules.auth.service import AuthService
+from app.modules.auth.unit_of_work import AuthUoW
+
+router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+@router.post("/login", response_model=TokenResponse, status_code=status.HTTP_200_OK)
+@limiter.limit("10/minute")
+def login(request: Request, data: LoginRequest, session: Session = Depends(get_session)):
+    with AuthUoW(session) as uow:
+        return AuthService.login(uow, data)
+
+
+@router.post("/refresh", response_model=TokenResponse, status_code=status.HTTP_200_OK)
+def refresh(data: RefreshRequest, session: Session = Depends(get_session)):
+    with AuthUoW(session) as uow:
+        return AuthService.refresh(uow, data.refresh_token)
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    data: RefreshRequest,
+    session: Session = Depends(get_session),
+    _current_user: dict = Depends(get_current_user),
+):
+    with AuthUoW(session) as uow:
+        AuthService.logout(uow, data.refresh_token)

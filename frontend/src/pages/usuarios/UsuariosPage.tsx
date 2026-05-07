@@ -20,12 +20,12 @@ function SectionLabel({ label, code }: { label: string; code: string }) {
 }
 
 const ROL_STYLES: Record<string, { color: string; bg: string; border: string }> = {
-  Admin:     { color: "#FF5A00",                bg: "rgba(255,90,0,0.1)",          border: "rgba(255,90,0,0.2)" },
-  Encargado: { color: "rgba(248,248,248,0.6)",  bg: "rgba(248,248,248,0.05)",      border: "rgba(248,248,248,0.1)" },
-  Cliente:   { color: "rgba(52,211,153,0.8)",   bg: "rgba(52,211,153,0.08)",       border: "rgba(52,211,153,0.2)" },
+  ADMIN:     { color: "#FF5A00",                bg: "rgba(255,90,0,0.1)",          border: "rgba(255,90,0,0.2)" },
+  ENCARGADO: { color: "rgba(248,248,248,0.6)",  bg: "rgba(248,248,248,0.05)",      border: "rgba(248,248,248,0.1)" },
+  CLIENTE:   { color: "rgba(52,211,153,0.8)",   bg: "rgba(52,211,153,0.08)",       border: "rgba(52,211,153,0.2)" },
 };
 
-const ROLES = ["Admin", "Encargado", "Cliente"] as const;
+const ROLES = ["ADMIN", "ENCARGADO", "CLIENTE"] as const;
 
 export function UsuariosPage() {
   const [users, setUsers]     = useState<AppUser[]>([]);
@@ -34,7 +34,7 @@ export function UsuariosPage() {
   const [updating, setUpdating] = useState<number | null>(null);
 
   const currentUser = getCurrentUser();
-  const isAdmin = currentUser?.rol === "Admin";
+  const isAdmin = currentUser?.rol === "ADMIN";
 
   const fetchUsers = () => {
     setLoading(true);
@@ -127,7 +127,7 @@ export function UsuariosPage() {
             </div>
 
             {users.map((u) => {
-              const rolStyle = ROL_STYLES[u.rol] ?? ROL_STYLES["Encargado"];
+              const rolStyle = ROL_STYLES[u.rol] ?? ROL_STYLES["ENCARGADO"];
               const isSelf = currentUser?.id === u.id;
 
               return (
@@ -197,7 +197,7 @@ export function UsuariosPage() {
                       className="text-[9px] font-mono tracking-wider px-2.5 py-1 uppercase flex-shrink-0 flex items-center gap-1.5"
                       style={{ color: rolStyle.color, background: rolStyle.bg, border: `1px solid ${rolStyle.border}`, opacity: !u.activo ? 0.5 : 1 }}
                     >
-                      {u.rol === "Admin" ? <ShieldCheck size={10} /> : <User size={10} />}
+                      {u.rol === "ADMIN" ? <ShieldCheck size={10} /> : <User size={10} />}
                       {u.rol}
                     </span>
                   )}
