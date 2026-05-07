@@ -1,0 +1,14 @@
+- [x] Crear PublicLayout con Navbar y EditorialFooter persistentes
+- [x] Configurar AppRouter con rutas para todas las secciones
+- [x] Actualizar Navbar para usar Links y cerrar menú al navegar
+- [x] Actualizar EditorialFooter para usar Links
+- [x] Desarrollar MenuPage (premium)
+- [x] Desarrollar AboutPage (premium)
+- [x] Desarrollar ExperiencePage (premium)
+- [x] Desarrollar ReservationsPage (premium)
+- [x] Desarrollar ContactPage (premium)
+- [x] Desarrollar CareersPage (premium)
+- [x] Desarrollar PressPage (premium)
+- [x] Desarrollar PrivacyPage (premium)
+- [x] Desarrollar TermsPage (premium)
+- [x] Asegurar efecto Scroll to Top en cambios de ruta
