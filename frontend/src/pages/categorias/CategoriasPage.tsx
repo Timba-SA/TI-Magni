@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Tag, Plus, Trash2, AlertTriangle } from "lucide-react";
 import type { Categoria, CategoriaFormData } from "@/features/categorias/types/categoria.types";
 import { getCategorias, createCategoria, deleteCategoria } from "@/features/categorias/services/categoriasService";
+import { BackToDashboard } from "@/components/admin/BackToDashboard";
 
 // ─── Section label ────────────────────────────────────────────────────────────
 function SectionLabel({ label, code }: { label: string; code: string }) {
@@ -77,6 +78,7 @@ export function CategoriasPage() {
 
   return (
     <div className="p-6 md:p-8 space-y-10 max-w-4xl mx-auto">
+      <BackToDashboard />
 
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div>

@@ -1,61 +1,29 @@
-export type EstadoInsumo = "Activo" | "Inactivo";
+// ─── Modelo real del backend ─────────────────────────────────────────────────
 
-export interface Insumo {
+export interface Ingrediente {
   id: number;
   nombre: string;
-  descripcion: string;
-  categoria: string;
-  unidadMedida: string;
-  stockActual: number;
-  stockMinimo: number;
-  precioUnitario: number;
-  estado: EstadoInsumo;
-  fechaAlta: string;
+  descripcion: string | null;
+  es_alergeno: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface InsumoFormData {
+export interface IngredienteFormData {
   nombre: string;
   descripcion: string;
-  categoria: string;
-  unidadMedida: string;
-  stockActual: number;
-  stockMinimo: number;
-  precioUnitario: number;
-  estado: EstadoInsumo;
+  es_alergeno: boolean;
 }
 
-export interface InsumoFiltersState {
+// ─── Tipos del estado de filtros ──────────────────────────────────────────────
+
+export interface IngredienteFiltersState {
   search: string;
-  categoria: string;
-  estado: string;
-  soloStockBajo: boolean;
+  soloAlergenos: boolean;
 }
 
-export const CATEGORIAS_INSUMO = [
-  "Materia prima",
-  "Carnes",
-  "Lácteos",
-  "Verduras",
-  "Panificados",
-  "Bebidas",
-  "Café",
-  "Condimentos",
-  "Repostería",
-  "Packaging",
-  "Limpieza",
-] as const;
-
-export const UNIDADES_MEDIDA = [
-  "kg",
-  "g",
-  "l",
-  "ml",
-  "unidad",
-  "caja",
-  "paquete",
-  "bolsa",
-  "botella",
-] as const;
-
-export type CategoriaInsumo = (typeof CATEGORIAS_INSUMO)[number];
-export type UnidadMedida = (typeof UNIDADES_MEDIDA)[number];
+// ─── Alias legacy para compatibilidad con componentes que usen "Insumo" ──────
+// Renombrar gradualmente hacia "Ingrediente"
+export type Insumo = Ingrediente;
+export type InsumoFormData = IngredienteFormData;
+export type InsumoFiltersState = IngredienteFiltersState;

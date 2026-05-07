@@ -1,56 +1,30 @@
-import { Package, CheckCircle, XCircle, AlertTriangle, DollarSign } from "lucide-react";
-import type { Insumo } from "../types/insumo.types";
+import { Package, AlertTriangle } from "lucide-react";
+import type { Ingrediente } from "../types/insumo.types";
 import { DashboardCard } from "@/components/admin/DashboardCard";
-import { formatCurrency } from "@/utils/formatCurrency";
 
 interface InsumoStatsProps {
-  insumos: Insumo[];
+  insumos: Ingrediente[];
 }
 
 export function InsumoStats({ insumos }: InsumoStatsProps) {
   const total = insumos.length;
-  const activos = insumos.filter((i) => i.estado === "Activo").length;
-  const inactivos = insumos.filter((i) => i.estado === "Inactivo").length;
-  const stockBajo = insumos.filter(
-    (i) => i.stockActual <= i.stockMinimo && i.estado === "Activo"
-  ).length;
-  const valorTotal = insumos.reduce(
-    (acc, i) => acc + i.stockActual * i.precioUnitario,
-    0
-  );
+  const alergenos = insumos.filter((i) => i.es_alergeno).length;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 gap-4">
       <DashboardCard
-        title="Total insumos"
+        title="Total ingredientes"
         value={total}
+        subtitle="registrados en el sistema"
         icon={<Package size={22} />}
         accent="orange"
       />
       <DashboardCard
-        title="Activos"
-        value={activos}
-        icon={<CheckCircle size={22} />}
-        accent="green"
-      />
-      <DashboardCard
-        title="Inactivos"
-        value={inactivos}
-        icon={<XCircle size={22} />}
-        accent="red"
-      />
-      <DashboardCard
-        title="Stock bajo"
-        value={stockBajo}
-        subtitle={stockBajo > 0 ? "Requieren atención" : "Todo en orden"}
+        title="Alérgenos"
+        value={alergenos}
+        subtitle={alergenos > 0 ? "requieren etiquetado" : "ninguno registrado"}
         icon={<AlertTriangle size={22} />}
         accent="yellow"
-      />
-      <DashboardCard
-        title="Valor inventario"
-        value={formatCurrency(valorTotal)}
-        icon={<DollarSign size={22} />}
-        accent="beige"
       />
     </div>
   );

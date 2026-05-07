@@ -1,9 +1,17 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
-// Importación lazy para evitar dependencia circular — authService importa fetchApi,
-// fetchApi necesita getToken de authService.
 function getStoredToken(): string | null {
   return localStorage.getItem("the_food_store_token");
+}
+
+/** Limpia la sesión y redirige al login cuando el token expira. */
+function handleTokenExpired(): void {
+  localStorage.removeItem("the_food_store_token");
+  localStorage.removeItem("the_food_store_session");
+  // Redirige solo si no estamos ya en el login
+  if (!window.location.pathname.includes("/login")) {
+    window.location.href = "/login";
+  }
 }
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -26,6 +34,12 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
   });
 
   if (!response.ok) {
+    // 401 → token expirado o inválido: limpiar sesión y redirigir al login
+    if (response.status === 401) {
+      handleTokenExpired();
+      throw new Error("Tu sesión expiró. Iniciá sesión nuevamente.");
+    }
+
     let errorMessage = "Ocurrió un error en la solicitud";
     try {
       const errorData = await response.json();

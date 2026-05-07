@@ -10,10 +10,10 @@ interface AdminSidebarProps {
 }
 
 const ALL_NAV_ITEMS = [
-  { to: "/home",       label: "Dashboard",  icon: LayoutDashboard, code: "01", roles: ["Admin", "Encargado"] },
-  { to: "/insumos",    label: "Insumos",    icon: Package,         code: "02", roles: ["Admin", "Encargado"] },
-  { to: "/categorias", label: "Categorías", icon: Tag,             code: "03", roles: ["Admin", "Encargado"] },
-  { to: "/usuarios",   label: "Usuarios",   icon: Users,           code: "04", roles: ["Admin"] },
+  { to: "/home",       label: "Dashboard",  icon: LayoutDashboard, code: "01", roles: ["ADMIN", "ENCARGADO"] },
+  { to: "/insumos",    label: "Insumos",    icon: Package,         code: "02", roles: ["ADMIN", "ENCARGADO"] },
+  { to: "/categorias", label: "Categorías", icon: Tag,             code: "03", roles: ["ADMIN", "ENCARGADO"] },
+  { to: "/usuarios",   label: "Usuarios",   icon: Users,           code: "04", roles: ["ADMIN"] },
 ];
 
 

@@ -4,6 +4,7 @@ import type { AppUser } from "@/features/users/types/user.types";
 import { getUsers } from "@/features/users/services/usersService";
 import { getCurrentUser } from "@/features/auth/services/authService";
 import { fetchApi } from "@/shared/api/apiClient";
+import { BackToDashboard } from "@/components/admin/BackToDashboard";
 
 function SectionLabel({ label, code }: { label: string; code: string }) {
   return (
@@ -78,6 +79,7 @@ export function UsuariosPage() {
 
   return (
     <div className="p-6 md:p-8 space-y-10 max-w-4xl mx-auto">
+      <BackToDashboard />
 
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div>
