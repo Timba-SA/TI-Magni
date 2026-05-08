@@ -35,7 +35,7 @@ function OrbitalButton({ open, onClick }: { open: boolean; onClick: () => void }
   return (
     <button
       onClick={onClick}
-      className="relative w-14 h-14 flex items-center justify-center group"
+      className="relative w-16 h-16 flex items-center justify-center group"
       aria-label="Toggle menu"
     >
       {/* Rotating ring text */}
@@ -56,7 +56,7 @@ function OrbitalButton({ open, onClick }: { open: boolean; onClick: () => void }
       </motion.svg>
 
       {/* Inner cross / close */}
-      <div className="relative z-10 w-5 h-5">
+      <div className="relative z-10 w-6 h-6">
         <motion.span
           className="absolute top-1/2 left-0 right-0 h-[1px] bg-white origin-center"
           animate={{ rotate: open ? 45 : 0, y: open ? 0 : -4 }}
@@ -272,7 +272,7 @@ function FullScreenMenu({ open, onClose }: { open: boolean; onClose: () => void 
                 </p>
                 <p className="text-sm text-white/60 font-mono">Buenos Aires, BSAS</p>
                 {isAuthenticated && (
-                  <button 
+                  <button
                     onClick={() => { logout(); onClose(); }}
                     className="text-[10px] tracking-[0.2em] text-red-400/80 hover:text-red-300 uppercase font-mono mt-4 transition-colors"
                   >
@@ -316,6 +316,7 @@ function FullScreenMenu({ open, onClose }: { open: boolean; onClose: () => void 
 // ─── Main Navbar export ───────────────────────────────────────────────────────
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   // Lock scroll when open
   useEffect(() => {
@@ -346,7 +347,7 @@ export function Navbar() {
           />
         </div>
         <span
-          className="text-[10px] text-white/40 tracking-[0.3em] uppercase font-mono hidden md:block group-hover:text-white/70 transition-colors duration-300"
+          className="text-sm text-white/40 tracking-[0.3em] uppercase font-mono hidden md:block group-hover:text-white/70 transition-colors duration-300"
         >
           The Food Store
         </span>
@@ -363,30 +364,32 @@ export function Navbar() {
       </motion.div>
 
       {/* Panel login button — histórico */}
-      <motion.div
-        className="fixed top-[38px] right-28 z-[200]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.5 }}
-      >
-        <Link
-          to="/login"
-          className="group flex items-center gap-2 px-4 py-1.5 transition-all duration-300"
-          style={{
-            border: "1px solid rgba(198,154,58,0.35)",
-          }}
-          onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(198,154,58,0.8)")}
-          onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(198,154,58,0.35)")}
+      {!isAuthenticated && (
+        <motion.div
+          className="fixed top-[38px] right-28 z-[200]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
         >
-          <LogIn size={11} style={{ color: "rgba(198,154,58,0.8)" }} />
-          <span
-            className="text-[10px] tracking-[0.35em] uppercase transition-colors"
-            style={{ color: "rgba(198,154,58,0.6)", fontFamily: "'Cormorant Garamond', serif", fontWeight: 600 }}
+          <Link
+            to="/login"
+            className="group flex items-center gap-2.5 px-5 py-2 transition-all duration-300"
+            style={{
+              border: "1px solid rgba(198,154,58,0.35)",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(198,154,58,0.8)")}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(198,154,58,0.35)")}
           >
-            Panel
-          </span>
-        </Link>
-      </motion.div>
+            <LogIn size={13} style={{ color: "rgba(198,154,58,0.8)" }} />
+            <span
+              className="text-[11px] tracking-[0.35em] uppercase transition-colors"
+              style={{ color: "rgba(198,154,58,0.7)", fontFamily: "'Cormorant Garamond', serif", fontWeight: 600 }}
+            >
+              Log In · Register
+            </span>
+          </Link>
+        </motion.div>
+      )}
 
       {/* Full screen overlay */}
       <FullScreenMenu open={open} onClose={() => setOpen(false)} />

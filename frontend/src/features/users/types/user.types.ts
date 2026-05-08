@@ -1,8 +1,19 @@
-export interface AppUser {
+export interface UsuarioResponse {
   id: number;
-  username: string;
-  email: string;
   nombre: string;
-  rol: string;
-  activo: boolean;
+  apellido: string;
+  email: string;
+  celular: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface UsuarioDetailResponse extends UsuarioResponse {
+  roles: string[];
+}
+
+export interface UsuarioUpdateRequest {
+  nombre?: string;
+  apellido?: string;
+  celular?: string;
 }

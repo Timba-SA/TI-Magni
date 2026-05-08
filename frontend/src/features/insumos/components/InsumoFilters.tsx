@@ -20,23 +20,33 @@ export function InsumoFilters({ filters, onChange }: InsumoFiltersProps) {
     <div className="flex flex-wrap gap-3 items-center">
       {/* Search */}
       <div className="relative flex-1 min-w-[200px] max-w-sm">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F8F8F8]/30" />
+        <Search
+          size={15}
+          className="absolute left-3 top-1/2 -translate-y-1/2"
+          style={{ color: "var(--tfs-text-muted)" }}
+        />
         <Input
           placeholder="Buscar ingrediente..."
           value={filters.search}
           onChange={(e) => onChange({ ...filters, search: e.target.value })}
-          className="pl-9 bg-[#111111] border-[#F8F8F8]/10 text-[#F8F8F8] placeholder:text-[#F8F8F8]/25 focus-visible:ring-[#FF5A00]/50 h-9 text-sm"
+          className="pl-9 focus-visible:ring-[#FF5A00]/50 h-9 text-sm"
+          style={{
+            background: "var(--tfs-input-bg)",
+            border: "1px solid var(--tfs-input-border)",
+            color: "var(--tfs-text-primary)",
+          }}
         />
       </div>
 
       {/* Solo alérgenos */}
       <button
         onClick={() => onChange({ ...filters, soloAlergenos: !filters.soloAlergenos })}
-        className={`h-9 px-4 rounded-md text-sm font-medium border transition-all duration-200 ${
+        className="h-9 px-4 rounded-md text-sm font-medium border transition-all duration-200"
+        style={
           filters.soloAlergenos
-            ? "bg-amber-400/15 border-amber-400/40 text-amber-400"
-            : "bg-[#111111] border-[#F8F8F8]/10 text-[#F8F8F8]/50 hover:text-[#F8F8F8]/80"
-        }`}
+            ? { background: "rgba(251,191,36,0.15)", borderColor: "rgba(251,191,36,0.4)", color: "#FBBF24" }
+            : { background: "var(--tfs-input-bg)", borderColor: "var(--tfs-input-border)", color: "var(--tfs-text-muted)" }
+        }
       >
         ⚠ Solo alérgenos
       </button>
@@ -47,7 +57,8 @@ export function InsumoFilters({ filters, onChange }: InsumoFiltersProps) {
           variant="ghost"
           size="sm"
           onClick={() => onChange(EMPTY_FILTERS)}
-          className="h-9 text-[#F8F8F8]/40 hover:text-[#F8F8F8] gap-1"
+          className="h-9 gap-1"
+          style={{ color: "var(--tfs-text-muted)" }}
         >
           <X size={14} />
           Limpiar

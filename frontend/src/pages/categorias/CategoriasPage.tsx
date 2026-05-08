@@ -14,10 +14,17 @@ function SectionLabel({ label, code }: { label: string; code: string }) {
       >
         {code} — {label}
       </span>
-      <div style={{ flex: 1, height: 1, background: "rgba(248,248,248,0.04)" }} />
+      <div style={{ flex: 1, height: 1, background: "var(--tfs-divider)" }} />
     </div>
   );
 }
+
+// Estilos reutilizables para inputs de la página
+const inputBaseStyle = {
+  background: "var(--tfs-input-bg)",
+  border: "1px solid var(--tfs-input-border)",
+  color: "var(--tfs-text-heading)",
+};
 
 // ─── Página principal ─────────────────────────────────────────────────────────
 export function CategoriasPage() {
@@ -84,17 +91,17 @@ export function CategoriasPage() {
       <div>
         <div className="flex items-center gap-2 mb-3" style={{ fontFamily: "'Space Mono', monospace" }}>
           <Tag size={10} style={{ color: "rgba(255,90,0,0.5)" }} />
-          <span className="text-[9px] tracking-[0.45em] uppercase" style={{ color: "rgba(248,248,248,0.2)" }}>
+          <span className="text-[9px] tracking-[0.45em] uppercase" style={{ color: "var(--tfs-text-subtle)" }}>
             Panel de gestión
           </span>
         </div>
         <h2
           className="leading-none mb-2"
-          style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 300, letterSpacing: "-0.02em", color: "#E8E8E8" }}
+          style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 300, letterSpacing: "-0.02em", color: "var(--tfs-text-heading)" }}
         >
           Gestión de <span style={{ color: "#FF5A00", fontWeight: 600 }}>Categorías</span>
         </h2>
-        <p className="text-xs" style={{ color: "rgba(248,248,248,0.28)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.1em" }}>
+        <p className="text-xs" style={{ color: "var(--tfs-text-muted)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.1em" }}>
           Las categorías que crees acá estarán disponibles al cargar insumos.
         </p>
         <div className="mt-5" style={{ height: 1, background: "linear-gradient(to right, rgba(255,90,0,0.4), rgba(255,90,0,0.05), transparent)" }} />
@@ -105,14 +112,14 @@ export function CategoriasPage() {
         <SectionLabel label="Nueva categoría" code="01" />
         <form
           onSubmit={handleCreate}
-          style={{ background: "#0F0F0F", border: "1px solid rgba(248,248,248,0.06)", padding: "1.5rem" }}
+          style={{ background: "var(--tfs-card-bg)", border: "1px solid var(--tfs-border-subtle)", padding: "1.5rem" }}
           className="space-y-4"
         >
           <div style={{ height: 1, background: "rgba(255,90,0,0.25)", marginBottom: "0.5rem" }} />
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] tracking-[0.15em] uppercase font-mono" style={{ color: "rgba(248,248,248,0.35)" }}>
+              <label className="text-[10px] tracking-[0.15em] uppercase font-mono" style={{ color: "var(--tfs-text-muted)" }}>
                 Nombre <span style={{ color: "#FF5A00" }}>*</span>
               </label>
               <input
@@ -120,17 +127,13 @@ export function CategoriasPage() {
                 onChange={(e) => setNombre(e.target.value)}
                 placeholder="Ej: Carnes, Lácteos..."
                 className="w-full text-sm px-3.5 py-2.5 rounded-xl outline-none transition-all duration-200"
-                style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  color: "#E8E8E8",
-                }}
+                style={inputBaseStyle}
                 onFocus={(e) => { e.target.style.borderColor = "rgba(255,90,0,0.4)"; }}
-                onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.08)"; }}
+                onBlur={(e) => { e.target.style.borderColor = "var(--tfs-input-border)"; }}
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] tracking-[0.15em] uppercase font-mono" style={{ color: "rgba(248,248,248,0.35)" }}>
+              <label className="text-[10px] tracking-[0.15em] uppercase font-mono" style={{ color: "var(--tfs-text-muted)" }}>
                 Descripción
               </label>
               <input
@@ -138,13 +141,9 @@ export function CategoriasPage() {
                 onChange={(e) => setDescripcion(e.target.value)}
                 placeholder="Descripción opcional..."
                 className="w-full text-sm px-3.5 py-2.5 rounded-xl outline-none transition-all duration-200"
-                style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  color: "#E8E8E8",
-                }}
+                style={inputBaseStyle}
                 onFocus={(e) => { e.target.style.borderColor = "rgba(255,90,0,0.4)"; }}
-                onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.08)"; }}
+                onBlur={(e) => { e.target.style.borderColor = "var(--tfs-input-border)"; }}
               />
             </div>
           </div>
@@ -182,15 +181,15 @@ export function CategoriasPage() {
         )}
 
         {loading ? (
-          <p className="text-xs font-mono tracking-widest" style={{ color: "rgba(248,248,248,0.3)" }}>
+          <p className="text-xs font-mono tracking-widest" style={{ color: "var(--tfs-text-muted)" }}>
             Cargando...
           </p>
         ) : categorias.length === 0 ? (
           <div
-            style={{ background: "#0F0F0F", border: "1px solid rgba(248,248,248,0.05)", padding: "2rem" }}
+            style={{ background: "var(--tfs-card-bg)", border: "1px solid var(--tfs-border-subtle)", padding: "2rem" }}
             className="text-center"
           >
-            <p className="text-xs font-mono tracking-widest" style={{ color: "rgba(248,248,248,0.2)" }}>
+            <p className="text-xs font-mono tracking-widest" style={{ color: "var(--tfs-text-subtle)" }}>
               No hay categorías registradas aún.
             </p>
           </div>
@@ -201,30 +200,30 @@ export function CategoriasPage() {
                 key={cat.id}
                 className="flex items-center justify-between px-4 py-3 transition-all duration-150"
                 style={{
-                  background: "#0F0F0F",
-                  border: "1px solid rgba(248,248,248,0.05)",
+                  background: "var(--tfs-card-bg)",
+                  border: "1px solid var(--tfs-border-subtle)",
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(255,90,0,0.15)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(248,248,248,0.05)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--tfs-border-subtle)"; }}
               >
                 <div className="flex items-center gap-3">
                   <span
                     className="text-[8px] font-mono tracking-widest"
-                    style={{ color: "rgba(248,248,248,0.2)" }}
+                    style={{ color: "var(--tfs-text-subtle)" }}
                   >
                     #{String(cat.id).padStart(3, "0")}
                   </span>
                   <div>
-                    <p className="text-sm font-medium" style={{ color: "#E8E8E8" }}>{cat.nombre}</p>
+                    <p className="text-sm font-medium" style={{ color: "var(--tfs-text-heading)" }}>{cat.nombre}</p>
                     {cat.descripcion && (
-                      <p className="text-xs" style={{ color: "rgba(248,248,248,0.3)" }}>{cat.descripcion}</p>
+                      <p className="text-xs" style={{ color: "var(--tfs-text-muted)" }}>{cat.descripcion}</p>
                     )}
                   </div>
                 </div>
 
                 {confirmDelete === cat.id ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs" style={{ color: "rgba(248,248,248,0.4)" }}>¿Eliminar?</span>
+                    <span className="text-xs" style={{ color: "var(--tfs-text-muted)" }}>¿Eliminar?</span>
                     <button
                       onClick={() => handleDelete(cat.id)}
                       className="text-xs px-3 py-1 rounded transition-all"
@@ -235,7 +234,7 @@ export function CategoriasPage() {
                     <button
                       onClick={() => setConfirmDelete(null)}
                       className="text-xs px-3 py-1 rounded transition-all"
-                      style={{ background: "rgba(248,248,248,0.05)", color: "rgba(248,248,248,0.5)" }}
+                      style={{ background: "var(--tfs-input-bg)", color: "var(--tfs-text-muted)", border: "1px solid var(--tfs-border-subtle)" }}
                     >
                       No
                     </button>
@@ -244,9 +243,9 @@ export function CategoriasPage() {
                   <button
                     onClick={() => setConfirmDelete(cat.id)}
                     className="p-2 rounded transition-all duration-150"
-                    style={{ color: "rgba(248,248,248,0.2)" }}
+                    style={{ color: "var(--tfs-text-subtle)" }}
                     onMouseEnter={(e) => { e.currentTarget.style.color = "#C1121F"; e.currentTarget.style.background = "rgba(193,18,31,0.08)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(248,248,248,0.2)"; e.currentTarget.style.background = "transparent"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = "var(--tfs-text-subtle)"; e.currentTarget.style.background = "transparent"; }}
                   >
                     <Trash2 size={14} />
                   </button>
@@ -258,8 +257,8 @@ export function CategoriasPage() {
       </div>
 
       {/* ── Footer ──────────────────────────────────────────────────── */}
-      <div className="pt-4" style={{ borderTop: "1px solid rgba(248,248,248,0.03)" }}>
-        <p className="text-[9px] text-center tracking-[0.4em] uppercase" style={{ color: "rgba(248,248,248,0.1)", fontFamily: "'Space Mono', monospace" }}>
+      <div className="pt-4" style={{ borderTop: "1px solid var(--tfs-divider)" }}>
+        <p className="text-[9px] text-center tracking-[0.4em] uppercase" style={{ color: "var(--tfs-text-subtle)", fontFamily: "'Space Mono', monospace" }}>
           The Food Store · Sistema de gestión interna · 2026
         </p>
       </div>

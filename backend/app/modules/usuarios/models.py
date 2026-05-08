@@ -15,6 +15,7 @@ class Usuario(SQLModel, table=True):
     email: str = Field(max_length=254, unique=True, nullable=False, sa_column_kwargs={"unique": True})
     celular: Optional[str] = Field(default=None, max_length=20)
     password_hash: str = Field(max_length=60, nullable=False)
+    is_active: bool = Field(default=True, nullable=False)
     
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
     updated_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)

@@ -4,11 +4,18 @@ from sqlmodel import Session
 from app.core.database import get_session
 from app.core.dependencies import get_current_user
 from app.core.middleware import limiter
-from app.modules.auth.schemas import LoginRequest, RefreshRequest, TokenResponse
+from app.modules.auth.schemas import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse
 from app.modules.auth.service import AuthService
 from app.modules.auth.unit_of_work import AuthUoW
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+def register(data: RegisterRequest, session: Session = Depends(get_session)):
+    """Registra un nuevo usuario y retorna tokens (queda logueado directamente)."""
+    with AuthUoW(session) as uow:
+        return AuthService.register(uow, data)
 
 
 @router.post("/login", response_model=TokenResponse, status_code=status.HTTP_200_OK)

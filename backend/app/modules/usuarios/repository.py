@@ -1,15 +1,26 @@
-# TODO: Implementar repositorio de usuarios
-#
-# UsuarioRepository(BaseRepository[Usuario])
-#
-# Métodos adicionales sobre BaseRepository:
-# + get_by_email(email: str) → Usuario | None
-#   (para login y validación de email único en registro)
-#
-# + get_all_active() → list[Usuario]
-#   (filtra WHERE deleted_at IS NULL)
-#
-# + soft_delete(usuario: Usuario) → None
-#   (SET deleted_at = now(), NO eliminar físicamente)
-#
-# Regla: NUNCA commit/rollback aquí.
+from typing import Optional
+
+from sqlmodel import Session, select
+
+from app.core.repository import BaseRepository
+from app.modules.usuarios.models import Usuario
+
+
+class UsuarioRepository(BaseRepository[Usuario]):
+    def __init__(self, session: Session):
+        super().__init__(Usuario, session)
+
+    def get_by_email(self, email: str) -> Optional[Usuario]:
+        """Busca un usuario por email (para login y validación de unicidad)."""
+        return self.session.exec(
+            select(Usuario).where(Usuario.email == email)
+        ).first()
+
+    def get_all_active(self) -> list[Usuario]:
+        """
+        Retorna usuarios no eliminados permanentemente (deleted_at IS NULL).
+        Incluye tanto activos como suspendidos (is_active puede ser True o False).
+        """
+        return self.session.exec(
+            select(Usuario).where(Usuario.deleted_at == None)  # noqa: E711
+        ).all()

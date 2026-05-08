@@ -20,7 +20,7 @@ interface InsumoFormProps {
 
 function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
   return (
-    <label className="text-[10px] tracking-[0.15em] text-white/35 uppercase font-mono flex items-center gap-1">
+    <label className="text-[10px] tracking-[0.15em] uppercase font-mono flex items-center gap-1" style={{ color: "var(--tfs-text-muted)" }}>
       {children}
       {required && <span className="text-[#FF5A00] text-[10px] leading-none">*</span>}
     </label>
@@ -38,7 +38,13 @@ function FieldError({ message }: { message?: string }) {
 }
 
 const inputClass =
-  "w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-sm text-white/90 placeholder:text-white/20 outline-none focus:border-[#FF5A00]/40 focus:ring-2 focus:ring-[#FF5A00]/10 focus:bg-white/[0.05] transition-all duration-200 hover:border-white/15 hover:bg-white/[0.04]";
+  "w-full rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all duration-200";
+
+const inputStyle = {
+  background: "var(--tfs-input-bg)",
+  border: "1px solid var(--tfs-input-border)",
+  color: "var(--tfs-text-primary)",
+};
 
 export function InsumoForm({ open, insumo, onClose, onSave, serverError }: InsumoFormProps) {
   const isEditing = !!insumo;
@@ -78,9 +84,19 @@ export function InsumoForm({ open, insumo, onClose, onSave, serverError }: Insum
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="bg-[#0a0a0a]/95 backdrop-blur-2xl border border-white/[0.07] text-white max-w-md shadow-[0_0_80px_rgba(0,0,0,0.8)] rounded-2xl p-0">
+      <DialogContent
+        className="max-w-md shadow-2xl rounded-2xl p-0"
+        style={{
+          background: "var(--tfs-card-bg)",
+          border: "1px solid var(--tfs-border-mid)",
+          color: "var(--tfs-text-heading)",
+        }}
+      >
         {/* Header */}
-        <div className="relative px-7 pt-7 pb-5 border-b border-white/[0.06]">
+        <div
+          className="relative px-7 pt-7 pb-5"
+          style={{ borderBottom: "1px solid var(--tfs-border-subtle)" }}
+        >
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-[#FF5A00]/60 to-transparent" />
           <DialogHeader>
             <div className="flex items-center gap-3">
@@ -100,10 +116,10 @@ export function InsumoForm({ open, insumo, onClose, onSave, serverError }: Insum
                 </svg>
               </div>
               <div>
-                <DialogTitle className="text-white/95 text-base font-semibold tracking-tight">
+                <DialogTitle className="text-base font-semibold tracking-tight" style={{ color: "var(--tfs-text-heading)" }}>
                   {isEditing ? "Editar ingrediente" : "Nuevo ingrediente"}
                 </DialogTitle>
-                <p className="text-white/30 text-xs mt-0.5 font-mono tracking-wider">
+                <p className="text-xs mt-0.5 font-mono tracking-wider" style={{ color: "var(--tfs-text-muted)" }}>
                   {isEditing ? `ID #${insumo?.id}` : "Completá los datos"}
                 </p>
               </div>
@@ -121,7 +137,7 @@ export function InsumoForm({ open, insumo, onClose, onSave, serverError }: Insum
               control={control}
               rules={{ required: "El nombre es obligatorio" }}
               render={({ field }) => (
-                <input {...field} placeholder="Ej: Harina 000" className={inputClass} />
+                <input {...field} placeholder="Ej: Harina 000" className={inputClass} style={inputStyle} />
               )}
             />
             <FieldError message={errors.nombre?.message} />
@@ -134,18 +150,22 @@ export function InsumoForm({ open, insumo, onClose, onSave, serverError }: Insum
               name="descripcion"
               control={control}
               render={({ field }) => (
-                <textarea
+                  <textarea
                   {...field}
                   placeholder="Descripción breve del ingrediente (opcional)"
                   rows={3}
                   className={`${inputClass} h-auto resize-none`}
+                  style={inputStyle}
                 />
               )}
             />
           </div>
 
           {/* Es alérgeno */}
-          <div className="flex items-center gap-3 py-3 px-4 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+          <div
+            className="flex items-center gap-3 py-3 px-4 rounded-xl"
+            style={{ background: "var(--tfs-input-bg)", border: "1px solid var(--tfs-input-border)" }}
+          >
             <Controller
               name="es_alergeno"
               control={control}
@@ -159,9 +179,9 @@ export function InsumoForm({ open, insumo, onClose, onSave, serverError }: Insum
                 />
               )}
             />
-            <label htmlFor="es_alergeno" className="text-sm text-white/70 cursor-pointer select-none">
+            <label htmlFor="es_alergeno" className="text-sm cursor-pointer select-none" style={{ color: "var(--tfs-text-primary)" }}>
               Es alérgeno
-              <span className="block text-xs text-white/30 font-mono tracking-wider mt-0.5">
+              <span className="block text-xs font-mono tracking-wider mt-0.5" style={{ color: "var(--tfs-text-muted)" }}>
                 Marcar si puede causar reacciones alérgicas
               </span>
             </label>
@@ -175,14 +195,15 @@ export function InsumoForm({ open, insumo, onClose, onSave, serverError }: Insum
           )}
 
           {/* Footer */}
-          <div className="border-t border-white/[0.06] pt-5 -mx-7 px-7 -mb-5 pb-7">
+          <div className="pt-5 -mx-7 px-7 -mb-5 pb-7" style={{ borderTop: "1px solid var(--tfs-border-subtle)" }}>
             <DialogFooter className="gap-2 flex-row justify-end">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={onClose}
                 disabled={saving}
-                className="text-white/40 hover:text-white/70 hover:bg-white/[0.04] transition-all rounded-xl h-10 px-4 text-sm"
+                className="hover:bg-[#F8F8F8]/[0.04] transition-all rounded-xl h-10 px-4 text-sm"
+                style={{ color: "var(--tfs-text-muted)" }}
               >
                 Cancelar
               </Button>

@@ -4,16 +4,72 @@ from fastapi import HTTPException, status
 
 from app.core.security import (
     verify_password,
+    get_password_hash,
     create_access_token,
     create_refresh_token,
     hash_refresh_token,
 )
 from app.core.config import settings
-from app.modules.auth.schemas import LoginRequest, TokenResponse
+from app.modules.auth.schemas import LoginRequest, RegisterRequest, TokenResponse
 from app.modules.auth.unit_of_work import AuthUoW
+from app.modules.usuarios.models import Usuario
+from app.modules.auth.models import UsuarioRol
 
 
 class AuthService:
+
+    @staticmethod
+    def register(uow: AuthUoW, data: RegisterRequest) -> TokenResponse:
+        # Verificar que el email no esté en uso
+        existing = uow.auth.get_user_by_email(data.email)
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Ya existe una cuenta registrada con ese email.",
+            )
+
+        # Crear el usuario
+        nuevo = Usuario(
+            nombre=data.nombre,
+            apellido=data.apellido or "",
+            email=data.email,
+            password_hash=get_password_hash(data.password),
+            is_active=True,
+        )
+        uow._session.add(nuevo)
+        uow.flush()  # para obtener el ID antes del commit
+        uow._session.refresh(nuevo)
+
+        # Asignar rol CLIENT por defecto
+        rol = UsuarioRol(usuario_id=nuevo.id, rol_codigo="CLIENT")
+        uow._session.add(rol)
+        uow.commit()
+
+        # Emitir tokens — queda logueado directamente tras el registro
+        roles = ["CLIENT"]
+        access_token = create_access_token(
+            {"sub": str(nuevo.id), "email": nuevo.email, "roles": roles}
+        )
+        refresh_plain = create_refresh_token()
+        token_hash = hash_refresh_token(refresh_plain)
+        expires_at = datetime.now(timezone.utc) + timedelta(
+            days=settings.REFRESH_TOKEN_EXPIRE_DAYS
+        )
+        uow.auth.create_refresh_token(nuevo.id, token_hash, expires_at)
+        uow.commit()
+
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=refresh_plain,
+            user={
+                "id": nuevo.id,
+                "username": nuevo.email.split("@")[0],
+                "nombre": nuevo.nombre,
+                "apellido": nuevo.apellido,
+                "email": nuevo.email,
+                "rol": "CLIENT",
+            },
+        )
 
     @staticmethod
     def login(uow: AuthUoW, data: LoginRequest) -> TokenResponse:
@@ -26,6 +82,12 @@ class AuthService:
         )
         if not user or not verify_password(data.password, user.password_hash):
             raise invalid_exc
+
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Tu cuenta está suspendida. Contactá al administrador.",
+            )
 
         roles = uow.auth.get_user_roles(user.id)
         access_token = create_access_token(

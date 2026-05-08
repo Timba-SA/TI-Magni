@@ -12,12 +12,12 @@ export function BackToDashboard() {
     <button
       onClick={() => navigate("/home")}
       className="flex items-center gap-2 text-xs font-mono tracking-wider transition-all duration-200 mb-6"
-      style={{ color: "rgba(248,248,248,0.3)" }}
+      style={{ color: "var(--tfs-text-muted)" }}
       onMouseEnter={(e) => {
         e.currentTarget.style.color = "#FF5A00";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.color = "rgba(248,248,248,0.3)";
+        e.currentTarget.style.color = "var(--tfs-text-muted)";
       }}
     >
       <ArrowLeft size={12} />

@@ -38,7 +38,7 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="flex h-screen bg-[#0B0B0B] overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ background: "var(--tfs-bg-primary)" }}>
       {/* Sidebar */}
       <AdminSidebar
         user={user}

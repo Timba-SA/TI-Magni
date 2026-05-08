@@ -38,22 +38,22 @@ function ConfirmDeleteModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75">
       <div
         className="max-w-sm w-full p-8 shadow-2xl"
-        style={{ background: "#111111", border: "1px solid rgba(248,248,248,0.08)" }}
+        style={{ background: "var(--tfs-card-bg)", border: "1px solid var(--tfs-border-mid)" }}
       >
         <div style={{ height: 2, background: "#C1121F", opacity: 0.7, marginBottom: "1.5rem" }} />
         <p className="text-[9px] tracking-[0.45em] uppercase mb-3" style={{ color: "rgba(193,18,31,0.6)", fontFamily: "'Space Mono', monospace" }}>
           Eliminar ingrediente
         </p>
-        <h3 className="text-lg font-semibold mb-2" style={{ color: "#E8E8E8", letterSpacing: "-0.01em" }}>
+        <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--tfs-text-heading)", letterSpacing: "-0.01em" }}>
           ¿Eliminar este ingrediente?
         </h3>
-        <p className="text-sm mb-6" style={{ color: "rgba(248,248,248,0.45)" }}>
+        <p className="text-sm mb-6" style={{ color: "var(--tfs-text-muted)" }}>
           Se eliminará{" "}
-          <span className="font-semibold" style={{ color: "#E8E8E8" }}>{insumo.nombre}</span>{" "}
+          <span className="font-semibold" style={{ color: "var(--tfs-text-heading)" }}>{insumo.nombre}</span>{" "}
           permanentemente del sistema.
         </p>
         <div className="flex gap-3">
-          <Button variant="ghost" className="flex-1" style={{ color: "rgba(248,248,248,0.45)" }} onClick={onCancel}>
+          <Button variant="ghost" className="flex-1" style={{ color: "var(--tfs-text-muted)" }} onClick={onCancel}>
             Cancelar
           </Button>
           <Button className="flex-1 border-0 text-white" style={{ background: "#C1121F" }} onClick={onConfirm}>
@@ -148,7 +148,7 @@ export function InsumosPage() {
         <div>
           <p
             className="text-[9px] tracking-[0.45em] uppercase mb-1"
-            style={{ color: "rgba(248,248,248,0.25)", fontFamily: "'Space Mono', monospace" }}
+            style={{ color: "var(--tfs-text-muted)", fontFamily: "'Space Mono', monospace" }}
           >
             Gestión de inventario
           </p>
@@ -158,7 +158,7 @@ export function InsumosPage() {
               fontSize: "clamp(1.25rem, 2.5vw, 1.75rem)",
               fontWeight: 300,
               letterSpacing: "-0.02em",
-              color: "#E8E8E8",
+              color: "var(--tfs-text-heading)",
             }}
           >
             Ingredientes
@@ -181,22 +181,22 @@ export function InsumosPage() {
       {/* ── Filters ────────────────────────────────────────────────── */}
       <div
         className="p-4"
-        style={{ background: "#0F0F0F", border: "1px solid rgba(248,248,248,0.05)" }}
+        style={{ background: "var(--tfs-card-bg)", border: "1px solid var(--tfs-border-subtle)" }}
       >
         <InsumoFilters filters={filters} onChange={setFilters} />
       </div>
 
       {/* ── Table container ────────────────────────────────────────── */}
-      <div style={{ background: "#0F0F0F", border: "1px solid rgba(248,248,248,0.05)" }}>
+      <div style={{ background: "var(--tfs-card-bg)", border: "1px solid var(--tfs-border-subtle)" }}>
         {/* Table header bar */}
         <div
           className="flex items-center justify-between px-4 py-3"
-          style={{ borderBottom: "1px solid rgba(248,248,248,0.04)" }}
+          style={{ borderBottom: "1px solid var(--tfs-divider)" }}
         >
           <div className="flex items-center gap-3">
             <span
               className="text-[9px] tracking-[0.45em] uppercase"
-              style={{ color: "rgba(248,248,248,0.25)", fontFamily: "'Space Mono', monospace" }}
+              style={{ color: "var(--tfs-text-muted)", fontFamily: "'Space Mono', monospace" }}
             >
               Resultados
             </span>

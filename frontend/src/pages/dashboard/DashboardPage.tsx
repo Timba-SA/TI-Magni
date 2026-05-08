@@ -15,7 +15,7 @@ function SectionLabel({ label, code }: { label: string; code: string }) {
       >
         {code} — {label}
       </span>
-      <div style={{ flex: 1, height: 1, background: "rgba(248,248,248,0.04)" }} />
+      <div style={{ flex: 1, height: 1, background: "var(--tfs-divider)" }} />
     </div>
   );
 }
@@ -81,7 +81,7 @@ export function DashboardPage() {
           <LayoutDashboard size={10} style={{ color: "rgba(255,90,0,0.5)" }} />
           <span
             className="text-[9px] tracking-[0.45em] uppercase"
-            style={{ color: "rgba(248,248,248,0.2)" }}
+            style={{ color: "var(--tfs-text-subtle)" }}
           >
             Panel principal
           </span>
@@ -93,7 +93,7 @@ export function DashboardPage() {
             fontSize: "clamp(1.5rem, 3vw, 2rem)",
             fontWeight: 300,
             letterSpacing: "-0.02em",
-            color: "#E8E8E8",
+            color: "var(--tfs-text-heading)",
           }}
         >
           Bienvenido,{" "}
@@ -104,7 +104,7 @@ export function DashboardPage() {
 
         <p
           className="text-xs"
-          style={{ color: "rgba(248,248,248,0.28)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.1em" }}
+          style={{ color: "var(--tfs-text-muted)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.1em" }}
         >
           {user?.rol} · The Food Store Sistema de Gestión
         </p>
@@ -157,19 +157,19 @@ export function DashboardPage() {
               onClick={() => navigate(to)}
               className="group text-left transition-all duration-300"
               style={{
-                background: "#0F0F0F",
-                border: "1px solid rgba(248,248,248,0.05)",
+                background: "var(--tfs-card-bg)",
+                border: "1px solid var(--tfs-border-subtle)",
                 padding: "1.25rem",
               }}
               onMouseEnter={(e) => {
                 const el = e.currentTarget;
                 el.style.borderColor = "rgba(255,90,0,0.25)";
-                el.style.background = "#111111";
+                el.style.background = "var(--tfs-card-hover)";
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget;
-                el.style.borderColor = "rgba(248,248,248,0.05)";
-                el.style.background = "#0F0F0F";
+                el.style.borderColor = "var(--tfs-border-subtle)";
+                el.style.background = "var(--tfs-card-bg)";
               }}
             >
               <div style={{ height: "1px", background: "rgba(255,90,0,0.3)", marginBottom: "1rem" }} />
@@ -187,17 +187,17 @@ export function DashboardPage() {
                 <ArrowRight
                   size={14}
                   className="transition-transform duration-200 group-hover:translate-x-1"
-                  style={{ color: "rgba(248,248,248,0.2)" }}
+                  style={{ color: "var(--tfs-text-muted)" }}
                 />
               </div>
 
               <h3
                 className="text-sm font-semibold mb-1"
-                style={{ color: "#E8E8E8", letterSpacing: "-0.01em" }}
+                style={{ color: "var(--tfs-text-heading)", letterSpacing: "-0.01em" }}
               >
                 {label}
               </h3>
-              <p className="text-xs" style={{ color: "rgba(248,248,248,0.3)" }}>
+              <p className="text-xs" style={{ color: "var(--tfs-text-muted)" }}>
                 {description}
               </p>
             </button>
@@ -207,10 +207,10 @@ export function DashboardPage() {
 
 
       {/* ── Footer ────────────────────────────────────────────────── */}
-      <div className="pt-4" style={{ borderTop: "1px solid rgba(248,248,248,0.03)" }}>
+      <div className="pt-4" style={{ borderTop: "1px solid var(--tfs-divider)" }}>
         <p
           className="text-[9px] text-center tracking-[0.4em] uppercase"
-          style={{ color: "rgba(248,248,248,0.1)", fontFamily: "'Space Mono', monospace" }}
+          style={{ color: "var(--tfs-text-subtle)", fontFamily: "'Space Mono', monospace" }}
         >
           The Food Store · Sistema de gestión interna · 2026
         </p>
