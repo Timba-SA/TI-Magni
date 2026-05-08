@@ -17,3 +17,10 @@ export interface UsuarioUpdateRequest {
   apellido?: string;
   celular?: string;
 }
+
+export interface UsuarioListResponse {
+  items: UsuarioDetailResponse[];
+  total: number;
+  skip: number;
+  limit: number;
+}

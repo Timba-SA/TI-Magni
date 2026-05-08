@@ -27,3 +27,10 @@ class CategoriaRead(SQLModel):
     imagen_url: Optional[str]
     created_at: datetime
     updated_at: datetime
+
+
+class CategoriaListResponse(SQLModel):
+    items: list[CategoriaRead]
+    total: int
+    skip: int
+    limit: int

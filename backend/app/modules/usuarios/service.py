@@ -78,10 +78,10 @@ class UsuarioService:
             created_at=usuario.created_at,
         )
 
-    def get_all(self) -> list[UsuarioDetailResponse]:
+    def get_all(self, skip: int = 0, limit: int = 20) -> tuple[list[UsuarioDetailResponse], int]:
         """Lista todos los usuarios no eliminados. Solo para ADMIN."""
         with UsuarioUoW(self._session) as uow:
-            usuarios = uow.usuarios.get_all_active()
+            usuarios, total = uow.usuarios.get_all_active_paginated(skip, limit)
 
         result = []
         for u in usuarios:
@@ -98,7 +98,38 @@ class UsuarioService:
                     roles=roles,
                 )
             )
-        return result
+        return result, total
+
+    def exportar(self) -> bytes:
+        import io
+        import openpyxl
+
+        # Reuse get_all logic to fetch all records
+        items, _ = self.get_all(0, 10000)
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Usuarios"
+
+        headers = ["ID", "Nombre", "Apellido", "Email", "Celular", "Activo", "Roles", "Creado"]
+        ws.append(headers)
+
+        for item in items:
+            ws.append([
+                item.id,
+                item.nombre,
+                item.apellido,
+                item.email,
+                item.celular or "",
+                "Sí" if item.is_active else "No",
+                ", ".join(item.roles),
+                item.created_at.strftime("%Y-%m-%d %H:%M"),
+            ])
+
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+        return buffer.read()
 
     def toggle_active(self, usuario_id: int, current_user_id: int) -> UsuarioResponse:
         """

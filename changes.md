@@ -39,3 +39,4 @@ Estos changes fueron completados y archivados en `openspec/changes/archive/`.
 | 017-backend-impl-auth | Done | Autenticación JWT + RBAC: login, refresh, logout, rate limiting |
 | 018-backend-impl-usuarios | Done | Implementación de Usuarios, Suspender Cuentas, y Panel de Administración |
 | 020-backend-impl-ingredientes | Done | CRUD Ingredientes: paginación, filtros, soft delete, exportación .xlsx |
+| 021-pagination-and-export | Done | Paginación por servidor y Exportación a Excel en Categorías, Usuarios e Insumos |

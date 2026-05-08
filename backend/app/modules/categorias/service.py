@@ -24,9 +24,36 @@ class CategoriaService:
 
     # ── Métodos públicos ──────────────────────────────────────────────────────
 
-    def listar(self) -> list[Categoria]:
+    def listar(self, skip: int = 0, limit: int = 20) -> tuple[list[Categoria], int]:
         with CategoriaUoW(self._session) as uow:
-            return uow.categorias.get_all_activas()
+            return uow.categorias.get_all_activas_paginated(skip, limit)
+
+    def exportar(self) -> bytes:
+        import io
+        import openpyxl
+
+        with CategoriaUoW(self._session) as uow:
+            items, _ = uow.categorias.get_all_activas_paginated(0, 10000)
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Categorias"
+
+        headers = ["ID", "Nombre", "Descripción", "Creada"]
+        ws.append(headers)
+
+        for item in items:
+            ws.append([
+                item.id,
+                item.nombre,
+                item.descripcion or "",
+                item.created_at.strftime("%Y-%m-%d %H:%M"),
+            ])
+
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+        return buffer.read()
 
     def obtener(self, id: int) -> Categoria:
         with CategoriaUoW(self._session) as uow:

@@ -41,3 +41,10 @@ class UsuarioRoleUpdateRequest(SQLModel):
     Datos para modificar los roles de un usuario (solo ADMIN).
     """
     roles: list[str]
+
+
+class UsuarioListResponse(SQLModel):
+    items: list[UsuarioDetailResponse]
+    total: int
+    skip: int
+    limit: int

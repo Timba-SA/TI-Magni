@@ -21,8 +21,8 @@ export async function updateMe(
 }
 
 /** Lista todos los usuarios. Solo ADMIN. */
-export async function getUsuarios(): Promise<UsuarioDetailResponse[]> {
-  return fetchApi<UsuarioDetailResponse[]>("/usuarios/");
+export async function getUsuarios(skip: number = 0, limit: number = 20): Promise<import("../types/user.types").UsuarioListResponse> {
+  return fetchApi<import("../types/user.types").UsuarioListResponse>(`/usuarios/?skip=${skip}&limit=${limit}`);
 }
 
 /** Alterna el estado activo/suspendido de un usuario. Solo ADMIN. */
@@ -38,4 +38,30 @@ export async function updateUserRoles(id: number, roles: string[]): Promise<Usua
     method: "PATCH",
     body: JSON.stringify({ roles }),
   });
+}
+
+export async function exportarUsuarios(): Promise<void> {
+  const token = localStorage.getItem("the_food_store_token");
+  const headers: HeadersInit = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/exportar`, {
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error("Error al exportar usuarios");
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "usuarios.xlsx";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
 }

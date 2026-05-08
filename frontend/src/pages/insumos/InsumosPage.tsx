@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InsumoStats } from "@/features/insumos/components/InsumoStats";
 import { InsumoFilters } from "@/features/insumos/components/InsumoFilters";
@@ -13,6 +13,7 @@ import {
   bajaLogicaInsumo,
 } from "@/features/insumos/services/insumosService";
 import { BackToDashboard } from "@/components/admin/BackToDashboard";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import type {
   Ingrediente,
   IngredienteFormData,
@@ -68,7 +69,11 @@ function ConfirmDeleteModal({
 // ─── Página principal ─────────────────────────────────────────────────────────
 export function InsumosPage() {
   const [insumos, setInsumos] = useState<Ingrediente[]>([]);
+  const [total, setTotal] = useState(0);
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(20);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [filters, setFilters] = useState<IngredienteFiltersState>(EMPTY_FILTERS);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -82,8 +87,9 @@ export function InsumosPage() {
   const refresh = async () => {
     setLoading(true);
     try {
-      const data = await getInsumos();
-      setInsumos(data);
+      const data = await getInsumos(skip, limit, filters.search, filters.soloAlergenos);
+      setInsumos(data.items);
+      setTotal(data.total);
     } catch (error) {
       console.error("Error fetching ingredientes:", error);
     } finally {
@@ -91,19 +97,18 @@ export function InsumosPage() {
     }
   };
 
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => { refresh(); }, [skip, limit, filters]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setSkip(0);
+  }, [filters.search, filters.soloAlergenos]);
 
   // ─── Filtrado ───────────────────────────────────────────────────────────────
-  const filteredInsumos = useMemo(() => {
-    return insumos.filter((i) => {
-      const matchSearch =
-        filters.search === "" ||
-        i.nombre.toLowerCase().includes(filters.search.toLowerCase()) ||
-        (i.descripcion ?? "").toLowerCase().includes(filters.search.toLowerCase());
-      const matchAlergeno = !filters.soloAlergenos || i.es_alergeno;
-      return matchSearch && matchAlergeno;
-    });
-  }, [insumos, filters]);
+  // No longer needed client-side since we filter in the backend.
+  // We keep the filteredInsumos variable for backwards compatibility in the JSX
+  // but it now just points to the current page results.
+  const filteredInsumos = insumos;
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
   const handleCreate = () => { setSaveError(null); setSelectedInsumo(null); setFormOpen(true); };
@@ -188,7 +193,6 @@ export function InsumosPage() {
 
       {/* ── Table container ────────────────────────────────────────── */}
       <div style={{ background: "var(--tfs-card-bg)", border: "1px solid var(--tfs-border-subtle)" }}>
-        {/* Table header bar */}
         <div
           className="flex items-center justify-between px-4 py-3"
           style={{ borderBottom: "1px solid var(--tfs-divider)" }}
@@ -208,9 +212,34 @@ export function InsumosPage() {
                 border: "1px solid rgba(255,90,0,0.2)",
               }}
             >
-              {filteredInsumos.length}
+              {total}
             </span>
           </div>
+          <button
+            onClick={async () => {
+              try {
+                setExporting(true);
+                const { exportarIngredientes } = await import("@/features/insumos/services/insumosService");
+                await exportarIngredientes(filters.search, filters.soloAlergenos);
+              } catch (err) {
+                console.error("Error exporting", err);
+              } finally {
+                setExporting(false);
+              }
+            }}
+            disabled={exporting}
+            className="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded transition-all duration-200 border disabled:opacity-50"
+            style={{ 
+              background: "var(--tfs-card-bg)", 
+              color: "var(--tfs-text-heading)", 
+              borderColor: "var(--tfs-border-subtle)" 
+            }}
+            onMouseEnter={(e) => { if (!exporting) e.currentTarget.style.borderColor = "#FF5A00"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--tfs-border-subtle)"; }}
+          >
+            <Download size={14} />
+            {exporting ? "Exportando..." : "Exportar a Excel"}
+          </button>
         </div>
 
         {loading ? (
@@ -218,12 +247,26 @@ export function InsumosPage() {
             Cargando ingredientes...
           </div>
         ) : (
-          <InsumosTable
-            insumos={filteredInsumos}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDeleteRequest}
-          />
+          <>
+            <InsumosTable
+              insumos={filteredInsumos}
+              onView={handleView}
+              onEdit={handleEdit}
+              onDelete={handleDeleteRequest}
+            />
+            <div className="p-4" style={{ borderTop: "1px solid var(--tfs-divider)" }}>
+              <DataTablePagination
+                skip={skip}
+                limit={limit}
+                total={total}
+                onPageChange={setSkip}
+                onLimitChange={(newLimit) => {
+                  setLimit(newLimit);
+                  setSkip(0);
+                }}
+              />
+            </div>
+          </>
         )}
       </div>
 

@@ -9,10 +9,21 @@ interface IngredienteListResponse {
   limit: number;
 }
 
-/** Obtiene todos los ingredientes (max 100 registros). */
-export async function getInsumos(): Promise<Ingrediente[]> {
-  const res = await fetchApi<IngredienteListResponse>("/ingredientes?limit=100");
-  return res.items;
+/** Obtiene todos los ingredientes con paginación y filtros opcionales. */
+export async function getInsumos(
+  skip: number = 0,
+  limit: number = 20,
+  search: string = "",
+  soloAlergenos: boolean = false
+): Promise<IngredienteListResponse> {
+  const params = new URLSearchParams({
+    skip: skip.toString(),
+    limit: limit.toString(),
+  });
+  if (search) params.append("nombre", search);
+  if (soloAlergenos) params.append("es_alergeno", "true");
+
+  return await fetchApi<IngredienteListResponse>(`/ingredientes?${params.toString()}`);
 }
 
 export async function getInsumoById(id: number): Promise<Ingrediente | undefined> {
@@ -69,4 +80,37 @@ export async function bajaLogicaInsumo(id: number): Promise<boolean> {
 /** Reactivar no aplica al modelo Ingrediente — stub para compatibilidad. */
 export async function reactivarInsumo(_id: number): Promise<boolean> {
   return false;
+}
+
+export async function exportarIngredientes(
+  search: string = "",
+  soloAlergenos: boolean = false
+): Promise<void> {
+  const token = localStorage.getItem("the_food_store_token");
+  const headers: HeadersInit = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const params = new URLSearchParams();
+  if (search) params.append("nombre", search);
+  if (soloAlergenos) params.append("es_alergeno", "true");
+
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/ingredientes/exportar?${params.toString()}`, {
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error("Error al exportar ingredientes");
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "ingredientes.xlsx";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
 }

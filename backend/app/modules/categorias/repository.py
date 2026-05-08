@@ -20,6 +20,13 @@ class CategoriaRepository(BaseRepository[Categoria]):
             select(Categoria).where(Categoria.deleted_at == None)
         ).all()
 
+    def get_all_activas_paginated(self, skip: int, limit: int) -> tuple[list[Categoria], int]:
+        from sqlmodel import func
+        query = select(Categoria).where(Categoria.deleted_at == None)
+        total = self.session.exec(select(func.count()).select_from(query.subquery())).one()
+        items = self.session.exec(query.offset(skip).limit(limit)).all()
+        return items, total
+
     def get_by_parent(self, parent_id: Optional[int]) -> list[Categoria]:
         return self.session.exec(
             select(Categoria).where(

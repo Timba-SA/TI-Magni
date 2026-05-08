@@ -1,6 +1,7 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
+from fastapi.responses import StreamingResponse
 from sqlmodel import Session
 
 from app.core.database import get_session
@@ -10,6 +11,7 @@ from app.modules.usuarios.schemas import (
     UsuarioResponse,
     UsuarioRoleUpdateRequest,
     UsuarioUpdateRequest,
+    UsuarioListResponse,
 )
 from app.modules.usuarios.service import UsuarioService
 
@@ -34,10 +36,26 @@ def update_me(data: UsuarioUpdateRequest, session: SessionDep, current_user: Cur
     return UsuarioService(session).update_me(usuario_id, data)
 
 
-@router.get("/", response_model=list[UsuarioDetailResponse], status_code=status.HTTP_200_OK)
-def get_all(session: SessionDep, _admin: AdminOnly):
+@router.get("/", response_model=UsuarioListResponse, status_code=status.HTTP_200_OK)
+def get_all(
+    session: SessionDep,
+    _admin: AdminOnly,
+    skip: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+):
     """Lista todos los usuarios activos. Solo ADMIN."""
-    return UsuarioService(session).get_all()
+    items, total = UsuarioService(session).get_all(skip, limit)
+    return UsuarioListResponse(items=items, total=total, skip=skip, limit=limit)
+
+@router.get("/exportar", status_code=status.HTTP_200_OK)
+def exportar_usuarios(session: SessionDep, _admin: AdminOnly):
+    """Exporta todos los usuarios en formato Excel. Solo ADMIN."""
+    file_bytes = UsuarioService(session).exportar()
+    return StreamingResponse(
+        content=iter([file_bytes]),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=usuarios.xlsx"},
+    )
 
 
 @router.patch("/{id}/toggle-active", response_model=UsuarioResponse, status_code=status.HTTP_200_OK)

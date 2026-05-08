@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { Users, ShieldCheck, UserCheck, UserX } from "lucide-react";
+import { Users, ShieldCheck, UserCheck, UserX, Download } from "lucide-react";
 import type { UsuarioDetailResponse } from "@/features/users/types/user.types";
-import { getUsuarios, toggleActive, updateUserRoles } from "@/features/users/services/usersService";
+import { getUsuarios, toggleActive, updateUserRoles, exportarUsuarios } from "@/features/users/services/usersService";
 import { BackToDashboard } from "@/components/admin/BackToDashboard";
 import { useAuth } from "@/hooks/useAuth";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -32,7 +33,11 @@ const ROL_STYLES: Record<string, { color: string; bg: string; border: string }> 
 export function UsuariosPage() {
   const { user: currentUser } = useAuth();
   const [usuarios, setUsuarios] = useState<UsuarioDetailResponse[]>([]);
+  const [total, setTotal] = useState(0);
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(20);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toggling, setToggling] = useState<number | null>(null);
   const [updatingRole, setUpdatingRole] = useState<number | null>(null);
@@ -41,14 +46,15 @@ export function UsuariosPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await getUsuarios();
-      setUsuarios(data);
+      const data = await getUsuarios(skip, limit);
+      setUsuarios(data.items);
+      setTotal(data.total);
     } catch {
       setError("No se pudieron cargar los usuarios.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [skip, limit]);
 
   useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]);
 
@@ -83,8 +89,16 @@ export function UsuariosPage() {
     }
   };
 
-  const activos = usuarios.filter((u) => u.is_active).length;
-  const suspendidos = usuarios.filter((u) => !u.is_active).length;
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      await exportarUsuarios();
+    } catch (err) {
+      setError("Error al exportar usuarios a Excel.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div
@@ -116,32 +130,29 @@ export function UsuariosPage() {
               Administrá el acceso y el estado de los usuarios del sistema.
             </p>
           </div>
-
-          {/* Stats */}
-          {!loading && (
-            <div className="flex gap-4">
-              <div
-                className="text-center px-5 py-3 rounded"
-                style={{ background: "var(--tfs-card-bg)", border: "1px solid var(--tfs-border-subtle)" }}
-              >
-                <p className="text-xl font-bold" style={{ color: "rgba(52,211,153,0.9)" }}>{activos}</p>
-                <p className="text-[9px] tracking-widest uppercase" style={{ color: "var(--tfs-text-subtle)" }}>Activos</p>
-              </div>
-              <div
-                className="text-center px-5 py-3 rounded"
-                style={{ background: "var(--tfs-card-bg)", border: "1px solid var(--tfs-border-subtle)" }}
-              >
-                <p className="text-xl font-bold" style={{ color: "rgba(239,68,68,0.9)" }}>{suspendidos}</p>
-                <p className="text-[9px] tracking-widest uppercase" style={{ color: "var(--tfs-text-subtle)" }}>Suspendidos</p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
       {/* Contenido */}
       <div className="max-w-5xl mx-auto">
-        <SectionLabel label="Listado" code="01" />
+        <div className="flex justify-between items-center mb-5">
+          <SectionLabel label="Listado" code="01" />
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-2 text-xs font-medium px-4 py-2 rounded-lg transition-all duration-200 border"
+            style={{ 
+              background: "var(--tfs-card-bg)", 
+              color: "var(--tfs-text-heading)", 
+              borderColor: "var(--tfs-border-subtle)" 
+            }}
+            onMouseEnter={(e) => { if(!exporting) e.currentTarget.style.borderColor = "#FF5A00"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--tfs-border-subtle)"; }}
+          >
+            <Download size={14} />
+            {exporting ? "Exportando..." : "Exportar a Excel"}
+          </button>
+        </div>
 
         {loading && (
           <div className="text-center py-16" style={{ color: "var(--tfs-text-subtle)" }}>
@@ -281,6 +292,18 @@ export function UsuariosPage() {
                 </div>
               ))
             )}
+            <div className="pt-4 pb-2">
+              <DataTablePagination
+                total={total}
+                skip={skip}
+                limit={limit}
+                onPageChange={(newSkip) => setSkip(newSkip)}
+                onLimitChange={(newLimit) => {
+                  setLimit(newLimit);
+                  setSkip(0);
+                }}
+              />
+            </div>
           </div>
         )}
 

@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Tag, Plus, Trash2, AlertTriangle } from "lucide-react";
+import { Tag, Plus, Trash2, AlertTriangle, Download } from "lucide-react";
 import type { Categoria, CategoriaFormData } from "@/features/categorias/types/categoria.types";
-import { getCategorias, createCategoria, deleteCategoria } from "@/features/categorias/services/categoriasService";
+import { getCategorias, createCategoria, deleteCategoria, exportarCategorias } from "@/features/categorias/services/categoriasService";
 import { BackToDashboard } from "@/components/admin/BackToDashboard";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 // ─── Section label ────────────────────────────────────────────────────────────
 function SectionLabel({ label, code }: { label: string; code: string }) {
@@ -29,7 +30,11 @@ const inputBaseStyle = {
 // ─── Página principal ─────────────────────────────────────────────────────────
 export function CategoriasPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [total, setTotal] = useState(0);
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(20);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Form state
@@ -44,8 +49,9 @@ export function CategoriasPage() {
   const fetchCategorias = async () => {
     try {
       setLoading(true);
-      const data = await getCategorias();
-      setCategorias(data);
+      const data = await getCategorias(skip, limit);
+      setCategorias(data.items);
+      setTotal(data.total);
     } catch {
       setError("No se pudieron cargar las categorías.");
     } finally {
@@ -53,7 +59,7 @@ export function CategoriasPage() {
     }
   };
 
-  useEffect(() => { fetchCategorias(); }, []);
+  useEffect(() => { fetchCategorias(); }, [skip, limit]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +71,11 @@ export function CategoriasPage() {
       await createCategoria(data);
       setNombre("");
       setDescripcion("");
-      await fetchCategorias();
+      if (skip === 0) {
+        await fetchCategorias();
+      } else {
+        setSkip(0); // This will trigger the useEffect
+      }
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : "Error al crear la categoría.");
     } finally {
@@ -80,6 +90,17 @@ export function CategoriasPage() {
       await fetchCategorias();
     } catch {
       setError("No se pudo eliminar la categoría.");
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      await exportarCategorias();
+    } catch (err) {
+      setError("Error al exportar categorías a Excel.");
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -172,7 +193,24 @@ export function CategoriasPage() {
 
       {/* ── Listado ─────────────────────────────────────────────────── */}
       <div>
-        <SectionLabel label={`Categorías registradas (${categorias.length})`} code="02" />
+        <div className="flex justify-between items-center mb-5">
+          <SectionLabel label={`Categorías registradas`} code="02" />
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-2 text-xs font-medium px-4 py-2 rounded-lg transition-all duration-200 border"
+            style={{ 
+              background: "var(--tfs-card-bg)", 
+              color: "var(--tfs-text-heading)", 
+              borderColor: "var(--tfs-border-subtle)" 
+            }}
+            onMouseEnter={(e) => { if(!exporting) e.currentTarget.style.borderColor = "#FF5A00"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--tfs-border-subtle)"; }}
+          >
+            <Download size={14} />
+            {exporting ? "Exportando..." : "Exportar a Excel"}
+          </button>
+        </div>
 
         {error && (
           <p className="text-xs mb-4 flex items-center gap-2" style={{ color: "#C1121F" }}>
@@ -252,6 +290,19 @@ export function CategoriasPage() {
                 )}
               </div>
             ))}
+            
+            <div className="pt-4 pb-2">
+              <DataTablePagination
+                total={total}
+                skip={skip}
+                limit={limit}
+                onPageChange={(newSkip) => setSkip(newSkip)}
+                onLimitChange={(newLimit) => {
+                  setLimit(newLimit);
+                  setSkip(0);
+                }}
+              />
+            </div>
           </div>
         )}
       </div>
