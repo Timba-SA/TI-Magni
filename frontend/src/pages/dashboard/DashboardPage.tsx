@@ -31,7 +31,7 @@ export function DashboardPage() {
     const fetchInsumos = async () => {
       try {
         const data = await getInsumos();
-        setInsumos(data);
+        setInsumos(data.items);
       } catch (error) {
         console.error("Error fetching insumos:", error);
       } finally {

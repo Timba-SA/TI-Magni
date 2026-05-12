@@ -125,11 +125,11 @@ function LineInput({
 
 // ─── Main LoginPage ───────────────────────────────────────────────────────────
 export function LoginPage() {
-  const { login, register, isAuthenticated } = useAuth();
+  const { login, register, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   const [isRegistering, setIsRegistering] = useState(false);
-  const [user, setUser] = useState("");
+  const [username, setUsername] = useState("");
   const [pass, setPass] = useState("");
   const [email, setEmail] = useState("");
   const [nombre, setNombre] = useState("");
@@ -138,19 +138,21 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [hovered, setHovered] = useState(false);
 
-  if (isAuthenticated) return <Navigate to="/home" replace />;
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (isRegistering) {
-      if (!user.trim() || !pass.trim() || !email.trim() || !nombre.trim()) {
+      if (!username.trim() || !pass.trim() || !email.trim() || !nombre.trim()) {
         setError("Completá todos los campos.");
         return;
       }
     } else {
-      if (!user.trim() || !pass.trim()) {
+      if (!username.trim() || !pass.trim()) {
         setError("Completá todos los campos.");
         return;
       }
@@ -159,18 +161,20 @@ export function LoginPage() {
     setLoading(true);
     await new Promise((r) => setTimeout(r, 700));
 
-    let ok = false;
+    let loggedUser = null;
 
     if (isRegistering) {
-      ok = await register({ username: user, email: email, password: pass, nombre: nombre });
-      if (!ok) setError("Error al registrarse. El usuario o email podría estar en uso.");
+      loggedUser = await register({ username: username, email: email, password: pass, nombre: nombre });
+      if (!loggedUser) setError("Error al registrarse. El usuario o email podría estar en uso.");
     } else {
-      ok = await login({ usernameOrEmail: user, password: pass });
-      if (!ok) setError("Credenciales incorrectas. Verificá usuario y contraseña.");
+      loggedUser = await login({ usernameOrEmail: username, password: pass });
+      if (!loggedUser) setError("Credenciales incorrectas. Verificá usuario y contraseña.");
     }
 
     setLoading(false);
-    if (ok) navigate("/home", { replace: true });
+    if (loggedUser) {
+      navigate("/", { replace: true });
+    }
   };
 
   return (
@@ -395,8 +399,8 @@ export function LoginPage() {
 
             <LineInput
               label={isRegistering ? "Nombre de usuario" : "Usuario o email"}
-              value={user}
-              onChange={setUser}
+              value={username}
+              onChange={setUsername}
               autoComplete="username"
             />
 

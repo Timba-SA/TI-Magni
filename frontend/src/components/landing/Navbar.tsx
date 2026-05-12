@@ -1,6 +1,6 @@
 import { motion, useMotionValue, useSpring, AnimatePresence } from "motion/react";
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -212,9 +212,9 @@ function MagneticLink({
 // ─── Full-screen overlay menu ────────────────────────────────────────────────
 const NAV_ITEMS = ["Menu", "About", "Experience", "Reservations", "Contact"];
 
-function FullScreenMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+function FullScreenMenu({ open, onClose, onLogout }: { open: boolean; onClose: () => void; onLogout: () => void }) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const activeBg = hoveredItem ? PANEL_COLORS[hoveredItem] : "#0B0B0B";
 
@@ -273,7 +273,7 @@ function FullScreenMenu({ open, onClose }: { open: boolean; onClose: () => void 
                 <p className="text-sm text-white/60 font-mono">Buenos Aires, BSAS</p>
                 {isAuthenticated && (
                   <button
-                    onClick={() => { logout(); onClose(); }}
+                    onClick={onLogout}
                     className="text-[10px] tracking-[0.2em] text-red-400/80 hover:text-red-300 uppercase font-mono mt-4 transition-colors"
                   >
                     [ Cerrar sesión ]
@@ -316,7 +316,15 @@ function FullScreenMenu({ open, onClose }: { open: boolean; onClose: () => void 
 // ─── Main Navbar export ───────────────────────────────────────────────────────
 export function Navbar() {
   const [open, setOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // Cierra sesión y navega a la landing
+  const handleLogout = () => {
+    logout();
+    setOpen(false);
+    navigate("/");
+  };
 
   // Lock scroll when open
   useEffect(() => {
@@ -363,26 +371,24 @@ export function Navbar() {
         <OrbitalButton open={open} onClick={() => setOpen(!open)} />
       </motion.div>
 
-      {/* Panel login button — histórico */}
+      {/* Botón corner: Login cuando no hay sesión */}
       {!isAuthenticated && (
         <motion.div
           className="fixed top-[38px] right-28 z-[200]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
+          transition={{ duration: 0.3 }}
         >
           <Link
             to="/login"
             className="group flex items-center gap-2.5 px-5 py-2 transition-all duration-300"
-            style={{
-              border: "1px solid rgba(198,154,58,0.35)",
-            }}
+            style={{ border: "1px solid rgba(198,154,58,0.35)" }}
             onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(198,154,58,0.8)")}
             onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(198,154,58,0.35)")}
           >
             <LogIn size={13} style={{ color: "rgba(198,154,58,0.8)" }} />
             <span
-              className="text-[11px] tracking-[0.35em] uppercase transition-colors"
+              className="text-[11px] tracking-[0.35em] uppercase"
               style={{ color: "rgba(198,154,58,0.7)", fontFamily: "'Cormorant Garamond', serif", fontWeight: 600 }}
             >
               Log In · Register
@@ -391,8 +397,34 @@ export function Navbar() {
         </motion.div>
       )}
 
+      {/* Botón corner: Panel solo para staff/admin */}
+      {isAuthenticated && user?.rol !== "CLIENT" && (
+        <motion.div
+          className="fixed top-[38px] right-28 z-[200]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Link
+            to="/home"
+            className="group flex items-center gap-2.5 px-5 py-2 transition-all duration-300"
+            style={{ border: "1px solid rgba(255,90,0,0.35)" }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(255,90,0,0.8)")}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,90,0,0.35)")}
+          >
+            <span
+              className="text-[11px] tracking-[0.35em] uppercase"
+              style={{ color: "rgba(255,90,0,0.7)", fontFamily: "'Cormorant Garamond', serif", fontWeight: 600 }}
+            >
+              Panel
+            </span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A00] animate-pulse" />
+          </Link>
+        </motion.div>
+      )}
+
       {/* Full screen overlay */}
-      <FullScreenMenu open={open} onClose={() => setOpen(false)} />
+      <FullScreenMenu open={open} onClose={() => setOpen(false)} onLogout={handleLogout} />
     </>
   );
 }

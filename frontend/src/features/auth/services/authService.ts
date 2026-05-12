@@ -64,19 +64,22 @@ export async function login(credentials: LoginCredentials): Promise<AuthUser | n
 
 export async function register(credentials: RegisterCredentials): Promise<AuthUser | null> {
   try {
-    const user = await fetchApi<AuthUser>("/auth/register", {
-      method: "POST",
-      body: JSON.stringify(credentials),
-    });
+    const response = await fetchApi<{ access_token: string; refresh_token: string; user: AuthUser }>(
+      "/auth/register",
+      {
+        method: "POST",
+        body: JSON.stringify(credentials),
+      }
+    );
 
-    if (user && user.id) {
-      // Nota: el register no devuelve token — el usuario debe hacer login después
+    if (response.access_token && response.user) {
       const session: StoredSession = {
-        user,
+        user: response.user,
         expiresAt: Date.now() + SESSION_DURATION_MS,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-      return user;
+      localStorage.setItem(TOKEN_KEY, response.access_token);
+      return response.user;
     }
     return null;
   } catch (error) {

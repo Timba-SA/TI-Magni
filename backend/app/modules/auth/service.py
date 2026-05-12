@@ -16,6 +16,23 @@ from app.modules.usuarios.models import Usuario
 from app.modules.auth.models import UsuarioRol
 
 
+# Prioridad de roles: índice más bajo = mayor privilegio
+ROL_PRIORITY: dict[str, int] = {
+    "ADMIN": 0,
+    "ENCARGADO": 1,
+    "CAJERO": 2,
+    "COCINERO": 3,
+    "STOCK": 4,
+    "CLIENT": 5,
+}
+
+def get_primary_role(roles: list[str]) -> str:
+    """Devuelve el rol con mayor privilegio de la lista."""
+    if not roles:
+        return "CLIENT"
+    return min(roles, key=lambda r: ROL_PRIORITY.get(r, 99))
+
+
 class AuthService:
 
     @staticmethod
@@ -67,7 +84,7 @@ class AuthService:
                 "nombre": nuevo.nombre,
                 "apellido": nuevo.apellido,
                 "email": nuevo.email,
-                "rol": "CLIENT",
+                "rol": get_primary_role(roles),
             },
         )
 
@@ -112,7 +129,7 @@ class AuthService:
                 "nombre": user.nombre,
                 "apellido": user.apellido,
                 "email": user.email,
-                "rol": roles[0] if roles else "CLIENT"
+                "rol": get_primary_role(roles),
             }
         )
 
@@ -160,7 +177,7 @@ class AuthService:
                 "nombre": user.nombre,
                 "apellido": user.apellido,
                 "email": user.email,
-                "rol": roles[0] if roles else "CLIENT"
+                "rol": get_primary_role(roles),
             }
         )
 

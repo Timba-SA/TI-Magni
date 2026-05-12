@@ -1,10 +1,13 @@
 import { AppRouter } from "@/router/AppRouter";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export default function App() {
   return (
     <ThemeProvider>
-      <AppRouter />
+      <AuthProvider>
+        <AppRouter />
+      </AuthProvider>
     </ThemeProvider>
   );
-}
+}
