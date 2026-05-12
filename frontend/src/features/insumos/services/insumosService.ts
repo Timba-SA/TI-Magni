@@ -82,6 +82,16 @@ export async function reactivarInsumo(_id: number): Promise<boolean> {
   return false;
 }
 
+export async function toggleActiveInsumo(id: number): Promise<Ingrediente | null> {
+  try {
+    return await fetchApi<Ingrediente>(`/ingredientes/${id}/toggle-active`, {
+      method: "PATCH",
+    });
+  } catch {
+    return null;
+  }
+}
+
 export async function exportarIngredientes(
   search: string = "",
   soloAlergenos: boolean = false

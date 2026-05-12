@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Eye, Pencil, Trash2, AlertTriangle, Play, Pause } from "lucide-react";
 import type { Ingrediente } from "../types/insumo.types";
 
 interface InsumosTableProps {
@@ -15,9 +15,10 @@ interface InsumosTableProps {
   onView: (insumo: Ingrediente) => void;
   onEdit: (insumo: Ingrediente) => void;
   onDelete: (insumo: Ingrediente) => void;
+  onToggleActive: (insumo: Ingrediente) => void;
 }
 
-export function InsumosTable({ insumos, onView, onEdit, onDelete }: InsumosTableProps) {
+export function InsumosTable({ insumos, onView, onEdit, onDelete, onToggleActive }: InsumosTableProps) {
   if (insumos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -57,9 +58,16 @@ export function InsumosTable({ insumos, onView, onEdit, onDelete }: InsumosTable
             >
               {/* Nombre */}
               <TableCell className="py-4">
-                <p className="text-sm font-medium" style={{ color: "var(--tfs-text-heading)" }}>
-                  {insumo.nombre}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium" style={{ color: "var(--tfs-text-heading)" }}>
+                    {insumo.nombre}
+                  </p>
+                  {!insumo.is_active && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-zinc-800 text-zinc-400 border border-zinc-700">
+                      Inactivo
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs font-mono" style={{ color: "var(--tfs-text-muted)" }}>
                   #{insumo.id}
                 </p>
@@ -119,6 +127,16 @@ export function InsumosTable({ insumos, onView, onEdit, onDelete }: InsumosTable
                     title="Editar"
                   >
                     <Pencil size={15} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:text-[#FFC107] hover:bg-[#FFC107]/10"
+                    style={{ color: "var(--tfs-text-muted)" }}
+                    onClick={() => onToggleActive(insumo)}
+                    title={insumo.is_active ? "Inhabilitar" : "Habilitar"}
+                  >
+                    {insumo.is_active ? <Pause size={15} /> : <Play size={15} />}
                   </Button>
                   <Button
                     variant="ghost"

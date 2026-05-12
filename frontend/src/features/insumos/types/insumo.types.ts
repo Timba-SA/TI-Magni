@@ -5,6 +5,8 @@ export interface Ingrediente {
   nombre: string;
   descripcion: string | null;
   es_alergeno: boolean;
+  is_active: boolean;         // false = Inhabilitado (visible en admin con etiqueta)
+  deleted_at: string | null;  // null = activo, fecha = archivado
   created_at: string;
   updated_at: string;
 }

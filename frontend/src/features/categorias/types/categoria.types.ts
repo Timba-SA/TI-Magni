@@ -2,6 +2,7 @@ export interface Categoria {
   id: number;
   nombre: string;
   descripcion?: string;
+  is_active: boolean;
   created_at: string; // Adjusted to match backend `created_at`
 }
 

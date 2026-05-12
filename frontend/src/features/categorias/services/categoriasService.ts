@@ -4,6 +4,10 @@ export async function getCategorias(skip: number = 0, limit: number = 20): Promi
   return fetchApi<CategoriaListResponse>(`/categorias?skip=${skip}&limit=${limit}`);
 }
 
+export async function toggleActiveCategoria(id: number): Promise<Categoria> {
+  return fetchApi<Categoria>(`/categorias/${id}/toggle-active`, { method: "PATCH" });
+}
+
 export async function createCategoria(data: CategoriaFormData): Promise<Categoria> {
   return fetchApi<Categoria>("/categorias", {
     method: "POST",

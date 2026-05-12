@@ -28,8 +28,12 @@ def listar_productos(
         Optional[bool],
         Query(description="Filtrar por disponibilidad"),
     ] = None,
+    include_deleted: Annotated[
+        bool,
+        Query(description="Incluir productos archivados (solo admin)"),
+    ] = False,
 ):
-    return ProductoService(session).listar(offset=offset, limit=limit, disponible=disponible)
+    return ProductoService(session).listar(offset=offset, limit=limit, disponible=disponible, include_deleted=include_deleted)
 
 
 @router.get("/{id}", response_model=ProductoReadDetalle, status_code=status.HTTP_200_OK)

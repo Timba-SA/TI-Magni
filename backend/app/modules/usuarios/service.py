@@ -78,10 +78,10 @@ class UsuarioService:
             created_at=usuario.created_at,
         )
 
-    def get_all(self, skip: int = 0, limit: int = 20) -> tuple[list[UsuarioDetailResponse], int]:
-        """Lista todos los usuarios no eliminados. Solo para ADMIN."""
+    def get_all(self, skip: int = 0, limit: int = 20, include_deleted: bool = False) -> tuple[list[UsuarioDetailResponse], int]:
+        """Lista todos los usuarios no eliminados permanentemente. Solo para ADMIN."""
         with UsuarioUoW(self._session) as uow:
-            usuarios, total = uow.usuarios.get_all_active_paginated(skip, limit)
+            usuarios, total = uow.usuarios.get_all_active_paginated(skip, limit, include_deleted)
 
         result = []
         for u in usuarios:
@@ -180,7 +180,27 @@ class UsuarioService:
             roles_set = set(data.roles)
             for rol in roles_set:
                 self._session.add(UsuarioRol(usuario_id=usuario_id, rol_codigo=rol))
-            
-            uow.commit()
-            
+            # El __exit__ del UoW hace commit al salir sin excepción
+
         return self.get_me(usuario_id)
+
+    def eliminar(self, usuario_id: int, current_user_id: int) -> None:
+        """
+        Soft delete de un usuario. El registro queda en BD pero desaparece de las listas normales.
+        Un admin no puede eliminarse a sí mismo.
+        """
+        if usuario_id == current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No podés eliminar tu propia cuenta.",
+            )
+
+        with UsuarioUoW(self._session) as uow:
+            usuario = uow.usuarios.get_by_id(usuario_id)
+            if not usuario or usuario.deleted_at is not None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Usuario con id={usuario_id} no encontrado.",
+                )
+            uow.usuarios.soft_delete(usuario)
+            # __exit__ del UoW hace commit

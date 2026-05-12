@@ -42,9 +42,10 @@ def get_all(
     _admin: AdminOnly,
     skip: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    include_deleted: Annotated[bool, Query(description="Incluir usuarios eliminados (solo admin)")] = False,
 ):
-    """Lista todos los usuarios activos. Solo ADMIN."""
-    items, total = UsuarioService(session).get_all(skip, limit)
+    """Lista todos los usuarios. Incluye activos y pausados. Solo ADMIN."""
+    items, total = UsuarioService(session).get_all(skip, limit, include_deleted)
     return UsuarioListResponse(items=items, total=total, skip=skip, limit=limit)
 
 @router.get("/exportar", status_code=status.HTTP_200_OK)
@@ -70,3 +71,10 @@ def update_roles(id: int, data: UsuarioRoleUpdateRequest, session: SessionDep, c
     """Actualiza los roles de un usuario. Solo ADMIN. No puede aplicarse a uno mismo."""
     admin_id = current_user["sub"]
     return UsuarioService(session).update_roles(id, data, admin_id)
+
+
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_usuario(id: int, session: SessionDep, current_user: AdminOnly):
+    """Soft delete de un usuario. El registro se archiva (deleted_at). Solo ADMIN. No puede aplicarse a uno mismo."""
+    admin_id = current_user["sub"]
+    UsuarioService(session).eliminar(id, admin_id)

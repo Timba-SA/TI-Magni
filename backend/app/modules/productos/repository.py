@@ -14,17 +14,21 @@ class ProductoRepository(BaseRepository[Producto]):
         offset: int = 0,
         limit: int = 20,
         disponible: Optional[bool] = None,
+        include_deleted: bool = False,
     ) -> list[Producto]:
-        query = select(Producto).where(Producto.deleted_at == None)
+        query = select(Producto)
+        if not include_deleted:
+            query = query.where(Producto.deleted_at == None)  # noqa: E711
         if disponible is not None:
             query = query.where(Producto.disponible == disponible)
         return self.session.exec(query.offset(offset).limit(limit)).all()
 
-    def count_activos(self) -> int:
+    def count_activos(self, include_deleted: bool = False) -> int:
         from sqlmodel import func
-        return self.session.exec(
-            select(func.count(Producto.id)).where(Producto.deleted_at == None)
-        ).one()
+        query = select(func.count(Producto.id))
+        if not include_deleted:
+            query = query.where(Producto.deleted_at == None)  # noqa: E711
+        return self.session.exec(query).one()
 
 
 class ProductoCategoriaRepository(BaseRepository[ProductoCategoria]):

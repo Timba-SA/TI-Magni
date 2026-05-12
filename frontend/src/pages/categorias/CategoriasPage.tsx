@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Tag, Plus, Trash2, AlertTriangle, Download } from "lucide-react";
+import { Tag, Plus, Trash2, AlertTriangle, Download, Play, Pause } from "lucide-react";
 import type { Categoria, CategoriaFormData } from "@/features/categorias/types/categoria.types";
-import { getCategorias, createCategoria, deleteCategoria, exportarCategorias } from "@/features/categorias/services/categoriasService";
+import { getCategorias, createCategoria, deleteCategoria, exportarCategorias, toggleActiveCategoria } from "@/features/categorias/services/categoriasService";
 import { BackToDashboard } from "@/components/admin/BackToDashboard";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
@@ -90,6 +90,15 @@ export function CategoriasPage() {
       await fetchCategorias();
     } catch {
       setError("No se pudo eliminar la categoría.");
+    }
+  };
+
+  const handleToggleActive = async (id: number) => {
+    try {
+      await toggleActiveCategoria(id);
+      await fetchCategorias();
+    } catch {
+      setError("No se pudo cambiar el estado de la categoría.");
     }
   };
 
@@ -252,7 +261,14 @@ export function CategoriasPage() {
                     #{String(cat.id).padStart(3, "0")}
                   </span>
                   <div>
-                    <p className="text-sm font-medium" style={{ color: "var(--tfs-text-heading)" }}>{cat.nombre}</p>
+                    <p className="text-sm font-medium flex items-center" style={{ color: "var(--tfs-text-heading)" }}>
+                      {cat.nombre}
+                      {!cat.is_active && (
+                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-zinc-800 text-zinc-400 border border-zinc-700">
+                          Inactivo
+                        </span>
+                      )}
+                    </p>
                     {cat.descripcion && (
                       <p className="text-xs" style={{ color: "var(--tfs-text-muted)" }}>{cat.descripcion}</p>
                     )}
@@ -278,15 +294,27 @@ export function CategoriasPage() {
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => setConfirmDelete(cat.id)}
-                    className="p-2 rounded transition-all duration-150"
-                    style={{ color: "var(--tfs-text-subtle)" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = "#C1121F"; e.currentTarget.style.background = "rgba(193,18,31,0.08)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = "var(--tfs-text-subtle)"; e.currentTarget.style.background = "transparent"; }}
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleToggleActive(cat.id)}
+                      className="p-2 rounded transition-all duration-150"
+                      style={{ color: "var(--tfs-text-subtle)" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = "#FFC107"; e.currentTarget.style.background = "rgba(255,193,7,0.1)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = "var(--tfs-text-subtle)"; e.currentTarget.style.background = "transparent"; }}
+                      title={cat.is_active ? "Inhabilitar" : "Habilitar"}
+                    >
+                      {cat.is_active ? <Pause size={14} /> : <Play size={14} />}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDelete(cat.id)}
+                      className="p-2 rounded transition-all duration-150"
+                      style={{ color: "var(--tfs-text-subtle)" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = "#C1121F"; e.currentTarget.style.background = "rgba(193,18,31,0.08)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = "var(--tfs-text-subtle)"; e.currentTarget.style.background = "transparent"; }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 )}
               </div>
             ))}

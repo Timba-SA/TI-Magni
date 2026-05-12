@@ -20,10 +20,11 @@ class ProductoService:
         offset: int = 0,
         limit: int = 20,
         disponible: Optional[bool] = None,
+        include_deleted: bool = False,
     ) -> list[Producto]:
         with ProductoUoW(self._session) as uow:
             return uow.productos.get_all_activos(
-                offset=offset, limit=limit, disponible=disponible
+                offset=offset, limit=limit, disponible=disponible, include_deleted=include_deleted
             )
 
     def obtener(self, id: int) -> Producto:
@@ -114,5 +115,5 @@ class ProductoService:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Producto con id={id} no encontrado.",
                 )
-            producto.deleted_at = datetime.utcnow()
-            uow.productos.add(producto)
+            uow.productos.soft_delete(producto)
+            # __exit__ del UoW hace commit

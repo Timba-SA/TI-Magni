@@ -11,6 +11,7 @@ import {
   createInsumo,
   updateInsumo,
   bajaLogicaInsumo,
+  toggleActiveInsumo,
 } from "@/features/insumos/services/insumosService";
 import { BackToDashboard } from "@/components/admin/BackToDashboard";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
@@ -115,6 +116,11 @@ export function InsumosPage() {
   const handleEdit = (i: Ingrediente) => { setSaveError(null); setSelectedInsumo(i); setFormOpen(true); };
   const handleView = (i: Ingrediente) => { setSelectedInsumo(i); setDetailOpen(true); };
   const handleDeleteRequest = (i: Ingrediente) => { setInsumoToDelete(i); setDeleteOpen(true); };
+
+  const handleToggleActive = async (i: Ingrediente) => {
+    await toggleActiveInsumo(i.id);
+    await refresh();
+  };
 
   const handleConfirmDelete = async () => {
     if (insumoToDelete) {
@@ -253,6 +259,7 @@ export function InsumosPage() {
               onView={handleView}
               onEdit={handleEdit}
               onDelete={handleDeleteRequest}
+              onToggleActive={handleToggleActive}
             />
             <div className="p-4" style={{ borderTop: "1px solid var(--tfs-divider)" }}>
               <DataTablePagination

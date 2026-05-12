@@ -25,8 +25,10 @@ class CategoriaRead(SQLModel):
     nombre: str
     descripcion: Optional[str]
     imagen_url: Optional[str]
+    is_active: bool  # False = Inhabilitada (visible en admin con etiqueta)
     created_at: datetime
     updated_at: datetime
+    deleted_at: Optional[datetime] = None  # None = activa, fecha = archivada
 
 
 class CategoriaListResponse(SQLModel):

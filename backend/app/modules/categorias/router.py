@@ -17,8 +17,9 @@ def listar_categorias(
     session: SessionDep,
     skip: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    include_deleted: Annotated[bool, Query(description="Incluir categorías archivadas (solo admin)")] = False,
 ):
-    items, total = CategoriaService(session).listar(skip, limit)
+    items, total = CategoriaService(session).listar(skip, limit, include_deleted)
     return CategoriaListResponse(items=items, total=total, skip=skip, limit=limit)
 
 @router.get("/exportar", status_code=status.HTTP_200_OK)
@@ -48,4 +49,11 @@ def actualizar_categoria(id: int, data: CategoriaUpdate, session: SessionDep):
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar_categoria(id: int, session: SessionDep):
+    """Archiva la categoría (soft delete). Desaparece de las listas normales."""
     CategoriaService(session).eliminar(id)
+
+
+@router.patch("/{id}/toggle-active", response_model=CategoriaRead, status_code=status.HTTP_200_OK)
+def toggle_active_categoria(id: int, session: SessionDep):
+    """Habilita o inhabilita una categoría. Sigue visible en el admin con etiqueta 'Inactivo'."""
+    return CategoriaService(session).toggle_active(id)

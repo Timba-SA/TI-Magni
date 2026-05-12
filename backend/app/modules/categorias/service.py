@@ -24,9 +24,9 @@ class CategoriaService:
 
     # ── Métodos públicos ──────────────────────────────────────────────────────
 
-    def listar(self, skip: int = 0, limit: int = 20) -> tuple[list[Categoria], int]:
+    def listar(self, skip: int = 0, limit: int = 20, include_deleted: bool = False) -> tuple[list[Categoria], int]:
         with CategoriaUoW(self._session) as uow:
-            return uow.categorias.get_all_activas_paginated(skip, limit)
+            return uow.categorias.get_all_activas_paginated(skip, limit, include_deleted)
 
     def exportar(self) -> bytes:
         import io
@@ -112,5 +112,27 @@ class CategoriaService:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Categoría con id={id} no encontrada.",
                 )
-            categoria.deleted_at = datetime.utcnow()
+            uow.categorias.soft_delete(categoria)
+            # __exit__ del UoW hace commit
+
+    def toggle_active(self, id: int) -> Categoria:
+        """
+        Invierte el estado is_active de la categoría.
+        - is_active=True  → categoría habilitada (comportamiento normal).
+        - is_active=False → inhabilitada (sigue visible en admin con etiqueta "Inactivo").
+        Solo aplica a categorías no archivadas (deleted_at IS NULL).
+        """
+        with CategoriaUoW(self._session) as uow:
+            categoria = uow.categorias.get_by_id(id)
+            if not categoria or categoria.deleted_at is not None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Categoría con id={id} no encontrada.",
+                )
+            categoria.is_active = not categoria.is_active
+            categoria.updated_at = datetime.utcnow()
             uow.categorias.add(categoria)
+
+        self._session.refresh(categoria)
+        return categoria
+

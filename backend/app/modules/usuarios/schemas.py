@@ -7,7 +7,9 @@ from sqlmodel import SQLModel
 class UsuarioResponse(SQLModel):
     """
     Respuesta pública de un usuario.
-    NUNCA incluye password_hash ni deleted_at.
+    NUNCA incluye password_hash.
+    - is_active = False → Pausado (visible en admin con etiqueta "Inactivo")
+    - deleted_at != None → Eliminado (oculto en listas normales)
     """
     id: int
     nombre: str
@@ -15,6 +17,7 @@ class UsuarioResponse(SQLModel):
     email: str
     celular: Optional[str] = None
     is_active: bool
+    deleted_at: Optional[datetime] = None  # None = activo o pausado, fecha = eliminado
     created_at: datetime
 
 

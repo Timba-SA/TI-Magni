@@ -62,9 +62,10 @@ class ProductoRead(SQLModel):
     precio_base: Decimal
     imagenes_url: list[str]
     stock_cantidad: int
-    disponible: bool
+    disponible: bool  # False = Pausado (visible en admin), True = Activo
     created_at: datetime
     updated_at: datetime
+    deleted_at: Optional[datetime] = None  # None = activo, fecha = archivado
 
 
 class ProductoReadDetalle(ProductoRead):

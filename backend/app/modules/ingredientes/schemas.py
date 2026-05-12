@@ -21,6 +21,8 @@ class IngredienteRead(BaseModel):
     nombre: str
     descripcion: Optional[str]
     es_alergeno: bool
+    is_active: bool  # False = Inhabilitado (visible en admin con etiqueta)
+    deleted_at: Optional[datetime] = None  # None = activo, fecha = archivado
     created_at: datetime
     updated_at: datetime
 

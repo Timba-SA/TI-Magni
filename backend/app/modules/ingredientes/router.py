@@ -13,7 +13,6 @@ from app.modules.ingredientes.schemas import (
     IngredienteUpdate,
 )
 from app.modules.ingredientes.service import IngredienteService
-from app.modules.ingredientes.unit_of_work import IngredienteUoW
 
 router = APIRouter(prefix="/ingredientes", tags=["Ingredientes"])
 
@@ -29,8 +28,7 @@ def listar_ingredientes(
     limit: Annotated[int, Query(ge=1, le=100, description="Límite de registros")] = 20,
     _current_user: dict = Depends(get_current_user),
 ):
-    with IngredienteUoW(session) as uow:
-        return IngredienteService.listar(uow, nombre, es_alergeno, skip, limit)
+    return IngredienteService(session).listar(nombre, es_alergeno, skip, limit)
 
 
 # ⚠️ IMPORTANTE: /exportar debe ir ANTES de /{id}
@@ -42,10 +40,7 @@ def exportar_ingredientes(
     es_alergeno: Annotated[Optional[bool], Query()] = None,
     _current_user: dict = Depends(get_current_user),
 ):
-    with IngredienteUoW(session) as uow:
-        file_bytes = IngredienteService.exportar(uow, nombre, es_alergeno)
-
-    # El UoW ya cerró. file_bytes son bytes puros en memoria — safe de retornar fuera del with.
+    file_bytes = IngredienteService(session).exportar(nombre, es_alergeno)
     return StreamingResponse(
         content=iter([file_bytes]),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -59,8 +54,7 @@ def obtener_ingrediente(
     session: SessionDep,
     _current_user: dict = Depends(get_current_user),
 ):
-    with IngredienteUoW(session) as uow:
-        return IngredienteService.obtener(uow, id)
+    return IngredienteService(session).obtener(id)
 
 
 @router.post(
@@ -73,8 +67,7 @@ def crear_ingrediente(
     session: SessionDep,
     _current_user: dict = Depends(require_role("ADMIN", "STOCK")),
 ):
-    with IngredienteUoW(session) as uow:
-        return IngredienteService.crear(uow, data)
+    return IngredienteService(session).crear(data)
 
 
 @router.patch("/{id}", response_model=IngredienteRead, status_code=status.HTTP_200_OK)
@@ -84,8 +77,17 @@ def actualizar_ingrediente(
     session: SessionDep,
     _current_user: dict = Depends(require_role("ADMIN", "STOCK")),
 ):
-    with IngredienteUoW(session) as uow:
-        return IngredienteService.actualizar(uow, id, data)
+    return IngredienteService(session).actualizar(id, data)
+
+
+@router.patch("/{id}/toggle-active", response_model=IngredienteRead, status_code=status.HTTP_200_OK)
+def toggle_active_ingrediente(
+    id: int,
+    session: SessionDep,
+    _current_user: dict = Depends(require_role("ADMIN", "STOCK")),
+):
+    """Habilita o inhabilita un ingrediente. Sigue visible en el admin con etiqueta 'Inactivo'."""
+    return IngredienteService(session).toggle_active(id)
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -94,5 +96,5 @@ def eliminar_ingrediente(
     session: SessionDep,
     _current_user: dict = Depends(require_role("ADMIN", "STOCK")),
 ):
-    with IngredienteUoW(session) as uow:
-        IngredienteService.eliminar(uow, id)
+    """Archiva el ingrediente (soft delete). Desaparece de las listas normales."""
+    IngredienteService(session).eliminar(id)

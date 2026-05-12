@@ -25,9 +25,13 @@ class UsuarioRepository(BaseRepository[Usuario]):
             select(Usuario).where(Usuario.deleted_at == None)  # noqa: E711
         ).all()
 
-    def get_all_active_paginated(self, skip: int, limit: int) -> tuple[list[Usuario], int]:
+    def get_all_active_paginated(
+        self, skip: int, limit: int, include_deleted: bool = False
+    ) -> tuple[list[Usuario], int]:
         from sqlmodel import func
-        query = select(Usuario).where(Usuario.deleted_at == None)
+        query = select(Usuario)
+        if not include_deleted:
+            query = query.where(Usuario.deleted_at == None)  # noqa: E711
         total = self.session.exec(select(func.count()).select_from(query.subquery())).one()
         items = self.session.exec(query.offset(skip).limit(limit)).all()
         return items, total
